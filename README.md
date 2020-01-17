@@ -159,13 +159,16 @@ You can pass a different IP or hostname. For example, to lookup the geolocation 
 resolves the name first, then uses the first IP address available, which might be IPv4 or IPv6:
 
 ```bash
-curl :8080/json/{ip or hostname}?lang={language}
+curl :8080/json/{ip or hostname}?lang={language}[&user]
 ```
 Same semantics are available for the `/xml/{ip}` and `/csv/{ip}` endpoints.
 JSON responses can be encoded as JSONP, by adding the `callback` parameter:
 
 The used default language depends on the present `Accept-Language` header. You can define the used language by 
 providing a `lang` parameter containing the two digit country code (en, ru, es, fr, de, jp).
+
+Add the `user` parameter to the end to receive user device specific information. Please see the [JSON example](#json)
+for output details.
 
 
 ### CSV
@@ -219,6 +222,45 @@ curl :8080/json/
   "longitude": -115.2821,
   "accuracy_radius": 20,
   "metro_code": 839
+}
+```
+```bash
+curl :8080/json/?user
+```
+```json
+{
+  "ip": "000.000.000.000",
+  "is_in_european_union": false,
+  "continent_code": "Nordamerika",
+  "country_code": "US",
+  "country_name": "USA",
+  "region_code": "NV",
+  "region_name": "",
+  "city": "Las Vegas",
+  "zip_code": "89129",
+  "time_zone": "America/Los_Angeles",
+  "latitude": 36.2473,
+  "longitude": -115.2821,
+  "accuracy_radius": 20,
+  "metro_code": 839,
+  "user": {
+    "language": {
+      "language": "en",
+      "region": "US",
+      "tag": "en-US"
+    },
+    "system": {
+      "os": "Linux",
+      "browser": "Ubuntu Chromium",
+      "version": "79.0.3945.79",
+      "os_version": "x86_64",
+      "device": "",
+      "mobile": false,
+      "tablet": false,
+      "desktop": true,
+      "bot": false
+    }
+  }
 }
 ```
 

@@ -50,6 +50,30 @@ type responseRecord struct {
 	Longitude   		float64 	`json:"longitude"`
 	AccuracyRadius   	uint  		`json:"accuracy_radius"`
 	MetroCode   		uint    	`json:"metro_code"`
+	User				*UserRecord  `json:"user,omitempty"`
+}
+
+type UserRecord struct {
+	Language	*LanguageRecord  `json:"language"`
+	System		*SystemRecord    `json:"system"`
+}
+
+type LanguageRecord struct {
+	Language string 	`json:"language"`
+	Region   string 	`json:"region"`
+	Tag      string 	`json:"tag"`
+}
+
+type SystemRecord struct {
+	OS 			string 	`json:"os"`
+	Browser   	string 	`json:"browser"`
+	Version   	string 	`json:"version"`
+	OSVersion   string 	`json:"os_version"`
+	Device   	string 	`json:"device"`
+	Mobile   	bool 	`json:"mobile"`
+	Tablet   	bool 	`json:"tablet"`
+	Desktop   	bool 	`json:"desktop"`
+	Bot   		bool 	`json:"bot"`
 }
 
 type ApiHandler struct {

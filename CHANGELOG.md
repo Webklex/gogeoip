@@ -11,6 +11,9 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 ### Added
 - NaN
 
+## [1.0.2] - 2020-01-18
+- Optional user agent information added
+
 ## [1.0.1] - 2020-01-17
 - Language parsing improved
 

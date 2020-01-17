@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"github.com/go-web/httpmux"
+	"github.com/mileusna/useragent"
 	"golang.org/x/text/language"
 	"io"
 	"math"
@@ -39,7 +40,7 @@ func (s *Server) IpLookUp(writer writerFunc) http.HandlerFunc {
 		w.Header().Set("X-Database-Date", s.Api.db.Date().Format(http.TimeFormat))
 		lang := getRequestParam(r, "lang")
 
-		resp := q.Record(ip, lang)
+		resp := q.Record(ip, lang, r)
 		writer(w, r, resp)
 	}
 }
@@ -51,8 +52,30 @@ func (q *GeoIpQuery) Translate(names map[string]string, lang string) string {
 	return names["en"]
 }
 
-func (q *GeoIpQuery) Record(ip net.IP, lang string) *responseRecord {
+func convertFloat32ToFloat64(q []float32) []float64{
+	result := make([]float64, len(q))
+	for i, val := range q {
+		result[i] = float64(val)
+	}
+	return result
+}
+
+func getMostPreferredLanguage(tag []language.Tag, q []float32) language.Tag {
+	lang := language.Tag{}
+	score := 0.0
+	for i, val := range q {
+		f := float64(val)
+		if score < f {
+			score = f
+			lang = tag[i]
+		}
+	}
+	return lang
+}
+
+func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *responseRecord {
 	lang = parseAcceptLanguage(lang, q.Country.Names)
+	// parse header
 
 	r := &responseRecord{
 		IP:          ip.String(),
@@ -72,6 +95,37 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string) *responseRecord {
 		r.RegionCode = q.Region[0].ISOCode
 		r.RegionName = q.Region[0].Names[lang]
 	}
+
+	if len(request.URL.Query()["user"]) > 0 {
+		t, qq, _ := language.ParseAcceptLanguage(request.Header.Get("Accept-Language"))
+
+		plang := getMostPreferredLanguage(t, qq)
+		base, _ := plang.Base()
+		region, _ := plang.Region()
+
+		userAgent := ua.Parse(request.Header.Get("User-Agent"))
+
+		r.User = &UserRecord{
+			Language: &LanguageRecord{
+				Language: base.String(),
+				Region: region.String(),
+				Tag: plang.String(),
+			},
+			// Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/79.0.3945.79 Chrome/79.0.3945.79 Safari/537.36
+			System:   &SystemRecord{
+				OS:      userAgent.OS,
+				Browser: userAgent.Name,
+				Version: userAgent.Version,
+				OSVersion: userAgent.OSVersion,
+				Device: userAgent.Device,
+				Mobile: userAgent.Mobile,
+				Tablet: userAgent.Tablet,
+				Desktop: userAgent.Desktop,
+				Bot: userAgent.Bot,
+			},
+		}
+	}
+
 	return r
 }
 
@@ -80,25 +134,62 @@ func (rr *responseRecord) String() string {
 	w := csv.NewWriter(b)
 	w.UseCRLF = true
 	var inEU int
+	var err error
 	if rr.IsInEuropeanUnion {
 		inEU = 1
 	}
-	err := w.Write([]string{
-		rr.IP,
-		rr.ContinentCode,
-		rr.CountryCode,
-		rr.CountryName,
-		rr.RegionCode,
-		rr.RegionName,
-		rr.City,
-		rr.ZipCode,
-		rr.TimeZone,
-		strconv.FormatFloat(rr.Latitude, 'f', 4, 64),
-		strconv.FormatFloat(rr.Longitude, 'f', 4, 64),
-		strconv.Itoa(int(rr.MetroCode)),
-		strconv.Itoa(inEU),
-		strconv.Itoa(int(rr.AccuracyRadius)),
-	})
+	if rr.User != nil {
+		var SystemMobile int;if rr.User.System.Mobile {SystemMobile = 1}
+		var SystemTablet int;if rr.User.System.Tablet {SystemTablet = 1}
+		var SystemDesktop int;if rr.User.System.Desktop {SystemDesktop = 1}
+		var SystemBot int;if rr.User.System.Bot {SystemBot = 1}
+
+		err = w.Write([]string{
+			rr.IP,
+			rr.ContinentCode,
+			rr.CountryCode,
+			rr.CountryName,
+			rr.RegionCode,
+			rr.RegionName,
+			rr.City,
+			rr.ZipCode,
+			rr.TimeZone,
+			strconv.FormatFloat(rr.Latitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Longitude, 'f', 4, 64),
+			strconv.Itoa(int(rr.MetroCode)),
+			strconv.Itoa(inEU),
+			strconv.Itoa(int(rr.AccuracyRadius)),
+			rr.User.Language.Language,
+			rr.User.Language.Region,
+			rr.User.Language.Tag,
+			rr.User.System.OS,
+			rr.User.System.Browser,
+			rr.User.System.Version,
+			rr.User.System.OSVersion,
+			rr.User.System.Device,
+			strconv.Itoa(SystemMobile),
+			strconv.Itoa(SystemTablet),
+			strconv.Itoa(SystemDesktop),
+			strconv.Itoa(SystemBot),
+		})
+	}else{
+		err = w.Write([]string{
+			rr.IP,
+			rr.ContinentCode,
+			rr.CountryCode,
+			rr.CountryName,
+			rr.RegionCode,
+			rr.RegionName,
+			rr.City,
+			rr.ZipCode,
+			rr.TimeZone,
+			strconv.FormatFloat(rr.Latitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Longitude, 'f', 4, 64),
+			strconv.Itoa(int(rr.MetroCode)),
+			strconv.Itoa(inEU),
+			strconv.Itoa(int(rr.AccuracyRadius)),
+		})
+	}
 	if err != nil {
 		return ""
 	}
