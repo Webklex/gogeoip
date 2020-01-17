@@ -1,0 +1,13 @@
+*.rdb
+*.swp
+*.csv
+*.zip
+/.idea
+*.tar.gz
+*.sqlite
+/vendor/*/
+/conf
+/cache
+/build
+/gui
+*.mmdb
