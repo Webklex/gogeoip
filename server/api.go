@@ -124,7 +124,10 @@ func getRequestParam(r *http.Request, param string) string {
 		}
 		return host
 	case "lang":
-		lang := r.URL.Query()["lang"][0]
+		lang := ""
+		if len(r.URL.Query()["lang"]) > 0 {
+			lang = r.URL.Query()["lang"][0]
+		}
 		if lang == "" {
 			lang = r.Header.Get("Accept-Language")
 		}

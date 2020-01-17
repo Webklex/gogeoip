@@ -27,7 +27,9 @@ function pack() {
   echo "Packing ${PACKAGE_NAME}"
 	cp ${OUTPUT_BINARY} ${PACKAGE_DIR}
 	cp README.md ${PACKAGE_DIR}
+	cp LICENSE ${PACKAGE_DIR}
 	cp -r gui ${PACKAGE_DIR}
+	rm -r ${PACKAGE_DIR}/gui/.git
 
 	cd ${OUTPUT_DIR}
 	sync
