@@ -32,6 +32,7 @@ type Server struct {
 
 type GeoIpQuery struct {
 	db.DefaultQuery
+	db.ASNDefaultQuery
 }
 
 type responseRecord struct {
@@ -48,9 +49,16 @@ type responseRecord struct {
 	TimeZone    		string  	`json:"time_zone"`
 	Latitude    		float64 	`json:"latitude"`
 	Longitude   		float64 	`json:"longitude"`
+	PopulationDensity   uint     	`json:"population_density"`
 	AccuracyRadius   	uint  		`json:"accuracy_radius"`
 	MetroCode   		uint    	`json:"metro_code"`
-	User				*UserRecord  `json:"user,omitempty"`
+	ASN					*ASNRecord  `json:"asn,omitempty"`
+	User				*UserRecord `json:"user,omitempty"`
+}
+
+type ASNRecord struct {
+	AutonomousSystemNumber 			uint   `json:"asn"`
+	AutonomousSystemOrganization 	string `json:"aso"`
 }
 
 type UserRecord struct {
@@ -78,6 +86,7 @@ type SystemRecord struct {
 
 type ApiHandler struct {
 	db    *db.DB
+	asnDB *db.DB
 	cors  *cors.Cors
 }
 
@@ -100,7 +109,8 @@ func NewServerConfig(c *config.Config) *Server {
 		RateLimit: NewRateLimit(rate.Limit(c.RateLimitLimit), c.RateLimitBurst),
 
 		Api: &ApiHandler{
-			db: db.NewDefaultConfig(c),
+			db: db.NewDefaultConfig(c, c.ProductID),
+			asnDB: db.NewDefaultConfig(c, c.ASNProductID),
 		},
 	}
 
@@ -108,7 +118,7 @@ func NewServerConfig(c *config.Config) *Server {
 }
 
 func (s *Server) Start() {
-	_, _ = s.openDB()
+	_ = s.openDB()
 	go s.watchEvents()
 
 	if s.Config.LogToStdout {

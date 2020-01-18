@@ -50,8 +50,33 @@ type DefaultQuery struct {
 		AccuracyRadius uint `maxminddb:"accuracy_radius"`
 		MetroCode uint    `maxminddb:"metro_code"`
 		TimeZone  string  `maxminddb:"time_zone"`
+		PopulationDensity  uint  `maxminddb:"population_density"`
 	} `maxminddb:"location"`
+	Traits struct{
+		AutonomousSystemNumber uint `maxminddb:"autonomous_system_number"`
+		AutonomousSystemOrganization string `maxminddb:"autonomous_system_organization"`
+		Domain string `maxminddb:"domain"`
+		IsAnonymous bool `maxminddb:"is_anonymous"`
+		IsAnonymousProxy bool `maxminddb:"is_anonymous_proxy"`
+		IsAnonymousVPN bool `maxminddb:"is_anonymous_vpn"`
+		IsHostingProvider bool `maxminddb:"is_hosting_provider"`
+		IsPublicProxy bool `maxminddb:"is_public_proxy"`
+		IsSatelliteProvider bool `maxminddb:"is_satellite_provider"`
+		IsTorExitNode bool `maxminddb:"is_tor_exit_node"`
+		ISP string `maxminddb:"isp"`
+		IpAddress string `maxminddb:"ip_address"`
+		Network string `maxminddb:"network"`
+		Organization string `maxminddb:"organization"`
+		StaticIpScore string `maxminddb:"static_ip_score"`
+		UserCount string `maxminddb:"user_count"`
+		UserType string `maxminddb:"user_type"`
+	} `maxminddb:"traits"`
 	Postal struct {
 		Code string `maxminddb:"code"`
 	} `maxminddb:"postal"`
+}
+
+type ASNDefaultQuery struct {
+	AutonomousSystemNumber uint `maxminddb:"autonomous_system_number"`
+	AutonomousSystemOrganization string `maxminddb:"autonomous_system_organization"`
 }

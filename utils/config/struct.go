@@ -46,6 +46,7 @@ type Config struct {
 	LicenseKey          string        `json:"LICENSE_KEY"`
 	UserID              string        `json:"USER_ID"`
 	ProductID           string        `json:"PRODUCT_ID"`
+	ASNProductID        string        `json:"ASN_PRODUCT_ID"`
 	GuiDir              string        `json:"GUI"`
 
 	File     			string 		  `json:"-"`

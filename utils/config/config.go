@@ -53,6 +53,7 @@ func DefaultConfig() *Config {
 
 		// https://www.maxmind.com/en/accounts/{UserID}/geoip/downloads?direct=1
 		ProductID:           "GeoLite2-City",
+		ASNProductID:        "GeoLite2-ASN",
 
 		RootDir: dir,
 		File: path.Join(dir, "conf", "settings.config"),

@@ -9,5 +9,5 @@
 /conf
 /cache
 /build
-/gui
+/gui*
 *.mmdb

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"../utils/db"
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
@@ -19,8 +18,15 @@ import (
 )
 
 // openDB opens and returns the IP database file or URL.
-func (s *Server) openDB() (*db.DB, error) {
-	return s.Api.db.OpenURL()
+func (s *Server) openDB() error {
+	if _, err := s.Api.db.OpenURL(); err != nil {
+		return err
+	}
+	if _, err := s.Api.asnDB.OpenURL(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Server) IpLookUp(writer writerFunc) http.HandlerFunc {
@@ -31,9 +37,14 @@ func (s *Server) IpLookUp(writer writerFunc) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
+
 		ip, q := ips[rand.Intn(len(ips))], &GeoIpQuery{}
-		err = s.Api.db.Lookup(ip, &q.DefaultQuery)
-		if err != nil {
+
+		if err := s.Api.db.Lookup(ip, &q.DefaultQuery); err != nil {
+			http.Error(w, "Try again later.", http.StatusServiceUnavailable)
+			return
+		}
+		if err := s.Api.asnDB.Lookup(ip, &q.ASNDefaultQuery); err != nil {
 			http.Error(w, "Try again later.", http.StatusServiceUnavailable)
 			return
 		}
@@ -89,7 +100,12 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *resp
 		Latitude:    roundFloat(q.Location.Latitude, .5, 4),
 		Longitude:   roundFloat(q.Location.Longitude, .5, 4),
 		MetroCode:   q.Location.MetroCode,
+		PopulationDensity:   q.Location.PopulationDensity,
 		AccuracyRadius:   q.Location.AccuracyRadius,
+		ASN: &ASNRecord{
+			AutonomousSystemNumber:       q.AutonomousSystemNumber,
+			AutonomousSystemOrganization: q.AutonomousSystemOrganization,
+		},
 	}
 	if len(q.Region) > 0 {
 		r.RegionCode = q.Region[0].ISOCode
@@ -146,6 +162,7 @@ func (rr *responseRecord) String() string {
 
 		err = w.Write([]string{
 			rr.IP,
+			strconv.Itoa(inEU),
 			rr.ContinentCode,
 			rr.CountryCode,
 			rr.CountryName,
@@ -157,8 +174,10 @@ func (rr *responseRecord) String() string {
 			strconv.FormatFloat(rr.Latitude, 'f', 4, 64),
 			strconv.FormatFloat(rr.Longitude, 'f', 4, 64),
 			strconv.Itoa(int(rr.MetroCode)),
-			strconv.Itoa(inEU),
+			strconv.Itoa(int(rr.PopulationDensity)),
 			strconv.Itoa(int(rr.AccuracyRadius)),
+			strconv.Itoa(int(rr.ASN.AutonomousSystemNumber)),
+			rr.ASN.AutonomousSystemOrganization,
 			rr.User.Language.Language,
 			rr.User.Language.Region,
 			rr.User.Language.Tag,
@@ -175,6 +194,7 @@ func (rr *responseRecord) String() string {
 	}else{
 		err = w.Write([]string{
 			rr.IP,
+			strconv.Itoa(inEU),
 			rr.ContinentCode,
 			rr.CountryCode,
 			rr.CountryName,
@@ -186,8 +206,10 @@ func (rr *responseRecord) String() string {
 			strconv.FormatFloat(rr.Latitude, 'f', 4, 64),
 			strconv.FormatFloat(rr.Longitude, 'f', 4, 64),
 			strconv.Itoa(int(rr.MetroCode)),
-			strconv.Itoa(inEU),
+			strconv.Itoa(int(rr.PopulationDensity)),
 			strconv.Itoa(int(rr.AccuracyRadius)),
+			strconv.Itoa(int(rr.ASN.AutonomousSystemNumber)),
+			rr.ASN.AutonomousSystemOrganization,
 		})
 	}
 	if err != nil {

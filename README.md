@@ -199,6 +199,10 @@ curl :8080/xml/
     <Longitude>-115.2821</Longitude>
     <AccuracyRadius>20</AccuracyRadius>
     <MetroCode>839</MetroCode>
+    <ASN>
+        <AutonomousSystemNumber>209</AutonomousSystemNumber>
+        <AutonomousSystemOrganization>CenturyLink Communications, LLC</AutonomousSystemOrganization>
+    </ASN>
 </Response>
 ```
 
@@ -221,7 +225,11 @@ curl :8080/json/
   "latitude": 36.2473,
   "longitude": -115.2821,
   "accuracy_radius": 20,
-  "metro_code": 839
+  "metro_code": 839,
+  "asn": {
+    "autonomous_system_number": 209,
+    "autonomous_system_organization": "CenturyLink Communications, LLC"
+  }
 }
 ```
 ```bash
@@ -243,6 +251,10 @@ curl :8080/json/?user
   "longitude": -115.2821,
   "accuracy_radius": 20,
   "metro_code": 839,
+  "asn": {
+    "autonomous_system_number": 209,
+    "autonomous_system_organization": "CenturyLink Communications, LLC"
+  },
   "user": {
     "language": {
       "language": "en",
@@ -283,7 +295,11 @@ foobar({
   "latitude": 36.2473,
   "longitude": -115.2821,
   "accuracy_radius": 20,
-  "metro_code": 839
+  "metro_code": 839,
+  "asn": {
+    "autonomous_system_number": 209,
+    "autonomous_system_organization": "CenturyLink Communications, LLC"
+  }
 });
 ```
 The callback parameter is ignored on all other endpoints.

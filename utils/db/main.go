@@ -15,7 +15,7 @@ import (
 	"../config"
 )
 
-func NewDefaultConfig(c *config.Config) *DB {
+func NewDefaultConfig(c *config.Config, productID string) *DB {
 	conf := &DB{
 		Config: c,
 		Notifier: &Notifier{
@@ -25,10 +25,10 @@ func NewDefaultConfig(c *config.Config) *DB {
 			Info:  make(chan string, 1),
 		},
 		ErrUnavailable: errors.New("no database available"),
-		dbArchive: filepath.Join(c.RootDir, "cache", "db.tar.gz"),
-		File: filepath.Join(c.RootDir, "cache", "geoip.mmdb"),
+		dbArchive: filepath.Join(c.RootDir, "cache", productID + ".tar.gz"),
+		File: filepath.Join(c.RootDir, "cache", productID + ".mmdb"),
 	}
-	conf.updateUrl = conf.GenerateUpdateURL()
+	conf.updateUrl = conf.GenerateUpdateURL(productID)
 
 	return conf
 }
@@ -67,8 +67,8 @@ func (d *DB) OpenURL() (*DB, error) {
 }
 
 // Generate the update url for the current product database.
-func (d *DB) GenerateUpdateURL() string {
-	u := "https://" + d.Config.UpdatesHost + "/app/" + "geoip_download?edition_id=" + d.Config.ProductID +
+func (d *DB) GenerateUpdateURL(productID string) string {
+	u := "https://" + d.Config.UpdatesHost + "/app/" + "geoip_download?edition_id=" + productID +
 		"&date=&license_key=" + d.Config.LicenseKey + "&suffix=tar.gz"
 	return u
 }
