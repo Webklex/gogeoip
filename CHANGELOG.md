@@ -9,7 +9,7 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 - NaN
 
 ### Added
-- NaN
+- Population density omitted if empty or null
 
 ## [1.0.3] - 2020-01-18
 - ASN information added
