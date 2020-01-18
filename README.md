@@ -10,12 +10,24 @@ GoGeoIP - a lightweight geoip api written in GO. [Live Demo](https://www.gogeoip
 - [Installation](#installation)
   - [GUI](#gui)
 - [Configuration](#server-options)
+  - [HTTP & HTTPS](#http--https)
+  - [Letsencrypt](#letsencrypt)
+  - [Middlewares & Extensions](#middlewares--extensions)
+  - [Rate limiting & Quota management](#rate-limiting--quota-management)
+  - [MaxMind](#maxmind)
+  - [ip2location](#ip2location)
+  - [Tor Project](#tor-project)
+  - [Logging](#logging)
+  - [Memcache](#memcache)
+  - [Redis](#redis)
+  - [Additional](#additional)
 - [Database](#database)
 - [Api](#api)
-  - [CSV](#csv)
-  - [XML](#xml)
-  - [JSON](#json)
-  - [JSONP](#jsonp)
+  - [Output](#output)
+    - [CSV](#csv)
+    - [XML](#xml)
+    - [JSON](#json)
+    - [JSONP](#jsonp)
 - [Build](#build)
 - [Support](#support)
 - [Security](#security)
@@ -34,13 +46,15 @@ GoGeoIP - a lightweight geoip api written in GO. [Live Demo](https://www.gogeoip
 * Serve the default [GeoLite2 City](https://dev.maxmind.com/geoip/geoip2/geolite2/) free database that is downloaded and updated automatically in background on a configurable schedule, or
 * Serve the commercial [GeoIP2 City](https://www.maxmind.com/en/geoip2-city) database from MaxMind, either as a local file that you provide and update periodically (so the server can reload it), or configured to be downloaded periodically using your API key
 * Multiple languages are supported (en, ru, es, jp, fr, de)
-* Detect tor and bot users
+* Detect VPN anonymizer, open proxies, web proxies, Tor exits, data center, web hosting (DCH) range and search engine robots (SES).
 * Supports Linux, OS X, FreeBSD, and Windows
 
 ### Requirements
-A Free MaxMind License is required and can be easily obtained:
+A Free MaxMind and / or ip2location License will be required and can be easily obtained:
 1. [Sign up for a MaxMind account](https://www.maxmind.com/en/geolite2/signup) (no purchase required)
 2. Set your password and [create a license key](https://www.maxmind.com/en/accounts/current/license-key)
+3. [Sign up for a IP2Location account](https://lite.ip2location.com/sign-up) (no purchase required)
+4. [Create access token](https://lite.ip2location.com/file-download)
 
 ### Installation
 Download and unpack a fitting [pre-compiled binary](https://github.com/webklex/gogeoip/releases) or build a binary 
@@ -49,8 +63,9 @@ yourself by by following the [build](#build) instructions.
 Continue by configuring your application:
 ```bash
 geoip \
-    -user-id 100000 \
-    -license-key 0AAaAaaAa0A0AAaA \
+    -mm-user-id 100000 \
+    -mm-license-key 0AAaAaaAa0A0AAaA \
+    -i2l-token 0BBbBbbBb0B0BBbB \
     -http=:8080 \
     -gui gui \
     -save
@@ -71,51 +86,104 @@ geoip -help
 ```
 You can configure the web server via command line flags or the config file `conf/settings.config`.
 
+#### HTTP & HTTPS
 | CLI                    | Config               | Type   | Default              | Description                                                 |
 | :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
-| -api-prefix            | API_PREFIX           | string | /                    | API endpoint prefix                                         |
-| -cert                  | CERT                 | string | cert.pem             | X.509 certificate file for HTTPS server                     |
-| -cors-origin           | CORS_ORIGIN          | string | *                    | Comma separated list of CORS origins endpoints              |
-| -gui                   | GUI                  | string |                      | Web gui directory                                           |
-| -hsts                  | HSTS                 | string |                      |                                                             |
 | -http                  | HTTP                 | string | localhost:8080       | Address in form of ip:port to listen                        |
-| -http2                 | HTTP2                | bool   | true                 | Enable HTTP/2 when TLS is enabled                           |
 | -https                 | HTTPS                | string |                      | Address in form of ip:port to listen                        |
+| -write-timeout         | WRITE_TIMEOUT        | int    | 15000000000          | Write timeout in nanoseconds for HTTP and HTTPS client connections |
+| -read-timeout          | READ_TIMEOUT         | int    | 30000000000          | Read timeout in nanoseconds for HTTP and HTTPS client connections |
+| -tcp-fast-open         | TCP_FAST_OPEN        | bool   | false                | Enable TCP fast open                                        |
+| -tcp-naggle            | TCP_NAGGLE           | bool   | false                | Enable TCP Nagle's algorithm                                |
+| -http2                 | HTTP2                | bool   | true                 | Enable HTTP/2 when TLS is enabled                           |
+| -hsts                  | HSTS                 | string |                      |                                                             |
 | -key                   | KEY                  | string | key.pem              | X.509 key file for HTTPS server                             |
+| -cert                  | CERT                 | string | cert.pem             | X.509 certificate file for HTTPS server                     |
+
+#### Letsencrypt
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
 | -letsencrypt           | LETSENCRYPT          | bool   | false                | Enable automatic TLS using letsencrypt.org                  |
 | -letsencrypt-email     | LETSENCRYPT_EMAIL    | string |                      | Optional email to register with letsencrypt                 |
 | -letsencrypt-hosts     | LETSENCRYPT_HOSTS    | string |                      | Comma separated list of hosts for the certificate           |
 | -letsencrypt-cert-dir  | LETSENCRYPT_CERT_DIR | string |                      | Letsencrypt cert dir                                        |
-| -license-key           | LICENSE_KEY          | string |                      | MaxMind License Key                                         |
-| -logtostdout           | LOGTOSTDOUT          | bool   | false                | Log to stdout instead of stderr                             |
-| -logtimestamp          | LOGTIMESTAMP         | bool   | true                 | Prefix non-access logs with timestamp                       |
-| -memcache              | MEMCACHE             | string | localhost:11211      | Memcache address in form of host:port[,host:port] for quota |
-| -memcache-timeout      | MEMCACHE_TIMEOUT     | int    | 1000000000           | Memcache read/write timeout in nanoseconds                  |
-| -product-id            | PRODUCT_ID           | string | GeoLite2-City        | MaxMind Product ID                                          |
+
+#### Middlewares & Extensions
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
+| -use-x-forwarded-for   | USE_X_FORWARDED_FOR  | bool   | false                | Use the X-Forwarded-For header when available (e.g. behind proxy) |
+| -cors-origin           | CORS_ORIGIN          | string | *                    | Comma separated list of CORS origins endpoints              |
+| -api-prefix            | API_PREFIX           | string | /                    | API endpoint prefix                                         |
+| -gui                   | GUI                  | string |                      | Web gui directory                                           |
+
+##### Rate limiting & Quota management
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
 | -quota-backend         | QUOTA_BACKEND        | string | redis                | Backend for rate limiter: map, redis, or memcache           |
 | -quota-burst           | QUOTA_BURST          | int    | 3                    | Max requests per source IP per request burst                |
 | -quota-interval        | QUOTA_INTERVAL       | int    | 3600000000000        | Quota expiration interval, per source IP querying the API in nanoseconds |
 | -quota-max             | QUOTA_MAX            | int    | 1                    | "Max requests per source IP per interval; set 0 to turn quotas off |
-| -read-timeout          | READ_TIMEOUT         | int    | 30000000000          | Read timeout in nanoseconds for HTTP and HTTPS client connections |
+
+#### MaxMind
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
+| -mm-license-key           | MM_LICENSE_KEY          | string |                      | MaxMind License Key                                         |
+| -mm-user-id               | MM_USER_ID              | string |                      | MaxMind User ID                                             |
+| -mm-product-id            | MM_PRODUCT_ID           | string | GeoLite2-City        | MaxMind Product ID                                          |
+| -mm-retry                 | MM_RETRY_INTERVAL       | int    | 7200000000000        | Max time to wait before retrying to download a MaxMind database |
+| -mm-update                | MM_UPDATE_INTERVAL      | int    | 86400000000000       | MaxMind database update check interval in nanoseconds               |
+| -mm-updates-host          | MM_UPDATES_HOST         | string | download.maxmind.com | MaxMind Updates Host                                        |
+
+#### ip2location
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
+| -i2l-token             | I2L_TOKEN            | string |                      | ip2location access token                                         |
+| -i2l-product-id        | I2L_PRODUCT_ID       | string | PX8LITEBIN           | ip2location Product ID                                          |
+| -i2l-retry             | I2L_RETRY_INTERVAL   | int    | 7200000000000        | Max time to wait before retrying to download a ip2location database |
+| -i2l-update            | I2L_UPDATE_INTERVAL  | int    | 86400000000000       | ip2location database update check interval in nanoseconds               |
+| -i2l-updates-host      | I2L_UPDATES_HOST     | string | www.ip2location.com  | ip2location Updates Host                                        |
+
+#### Tor Project
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
+| -tor-exit-check        | TOR_EXIT             | string | 8.8.8.8              | MaxMind Product ID                                          |
+| -tor-retry             | TOR_RETRY_INTERVAL   | int    | 7200000000000        | Max time in nanoseconds to wait before retrying to download database |
+| -tor-update            | TOR_UPDATE_INTERVAL  | int    | 86400000000000       | Database update check interval in nanoseconds               |
+| -tor-updates-host      | TOR_UPDATES_HOST     | string | check.torproject.org | MaxMind Updates Host                                        |
+
+#### Logging
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
+| -logtostdout           | LOGTOSTDOUT          | bool   | false                | Log to stdout instead of stderr                             |
+| -logtimestamp          | LOGTIMESTAMP         | bool   | true                 | Prefix non-access logs with timestamp                       |
+
+#### Memcache
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
+| -memcache              | MEMCACHE             | string | localhost:11211      | Memcache address in form of host:port[,host:port] for quota |
+| -memcache-timeout      | MEMCACHE_TIMEOUT     | int    | 1000000000           | Memcache read/write timeout in nanoseconds                  |
+
+#### Redis
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
 | -redis                 | REDIS                | string | localhost:6379       | Redis address in form of host:port[,host:port] for quota    |
 | -redis-timeout         | REDIS_TIMEOUT        | int    | 1000000000           | Redis read/write timeout in nanoseconds                     |
-| -retry                 | RETRY_INTERVAL       | int    | 7200000000000        | Max time in nanoseconds to wait before retrying to download database |
-| -save                  |                      | bool   | false                | Save config                                                 |
+
+#### Additional
+| CLI                    | Config               | Type   | Default              | Description                                                 |
+| :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
 | -silent                | SILENT               | bool   | false                | Disable HTTP and HTTPS log request details                  |
-| -tcp-fast-open         | TCP_FAST_OPEN        | bool   | false                | Enable TCP fast open                                        |
-| -tcp-naggle            | TCP_NAGGLE           | bool   | false                | Enable TCP Nagle's algorithm                                |
-| -update                | UPDATE_INTERVAL      | int    | 86400000000000       | Database update check interval in nanoseconds               |
-| -updates-host          | UPDATES_HOST         | string | download.maxmind.com | MaxMind Updates Host                                        |
-| -use-x-forwarded-for   | USE_X_FORWARDED_FOR  | bool   | false                | Use the X-Forwarded-For header when available (e.g. behind proxy) |
-| -user-id               | USER_ID              | string |                      | MaxMind User ID                                             |
+| -config                |                      | string | conf/settings.config | Config file path                                            |
+| -save                  |                      | bool   | false                | Save config                                                 |
 | -version               |                      | bool   | false                | Show version and exit                                       |
-| -write-timeout         | WRITE_TIMEOUT        | int    | 15000000000          | Write timeout in nanoseconds for HTTP and HTTPS client connections |
+| -help                  |                      | bool   | false                | Show help and exit                                          |
 
 If you're using LetsEncrypt.org to provision your TLS certificates, you have to listen for HTTPS on port 443. Following is an example of the server listening on 2 different ports: http (80) and https (443):
 ```bash
 geoip \
-    -user-id 100000 \
-    -license-key 0AAaAaaAa0A0AAaA \
+    -mm-user-id 100000 \
+    -mm-license-key 0AAaAaaAa0A0AAaA \
+    -i2l-token 0BBbBbbBb0B0BBbB \
     -http=:8080 \
     -https=:8443 \
     -hsts=max-age=31536000 \
@@ -128,8 +196,8 @@ geoip \
 ```bash
 $ cat conf/settings.config
 {
-    "USER_ID": "100000",
-    "LICENSE_KEY": "0AAaAaaAa0A0AAaA",
+    "MM_USER_ID": "100000",
+    "MM_LICENSE_KEY": "0AAaAaaAa0A0AAaA",
     "HTTP": ":8080",
     "HTTPS": ":8443",
     "HSTS": "max-age=31536000",
@@ -144,10 +212,13 @@ If the web server is running behind a reverse proxy or load balancer, you have t
 parameter and provide the `X-Forwarded-For` HTTP header in all requests. This is for the geoip web server be able to log the 
 client IP, and to perform geolocation lookups when an IP is not provided to the API, e.g. `/json/` (uses client IP) vs `/json/1.2.3.4`.
 
-## Database
-The current implementation uses the free [GeoLite2 City](http://dev.maxmind.com/geoip/geoip2/geolite2/) database from MaxMind.
-If you have purchased the commercial database from MaxMind, you can point the geoip web server or (Go API, for dev) to the URL 
-containing the file, or local file, and the server will use it.
+## Databases
+The current implementation uses the free [GeoLite2 City](http://dev.maxmind.com/geoip/geoip2/geolite2/) database from 
+MaxMind as well as the free [IP2Proxy](https://lite.ip2location.com/database/px8-ip-proxytype-country-region-city-isp-domain-usagetype-asn-lastseen) 
+database from ip2location and the generic tor [exit node list](https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=8.8.8.8) 
+provided by the [TorProject](https://www.torproject.org/).
+If you have purchased the commercial database from MaxMind or ip2location, you can point the geoip web server or 
+(Go API, for dev) to the URL containing the file, or local file, and the server will use it.
 In case of files on disk, you can replace the file with a newer version and the geoip web server will reload it automatically 
 in background. If instead of a file you use a URL (the default), we periodically check the URL in background to see if 
 there's a new database version available, then download the reload it automatically.
@@ -172,21 +243,63 @@ Add the `user` parameter to the end to receive user device specific information.
 for output details.
 
 
-### CSV
+### Output
+
+| Name                  | Value type    | JSON                      | XML                   | CSV   | Comment   |
+| :-------------------- | :------------ | :------------------------ | :-------------------- | :---- | :-------- |
+| IP address            | string        | ip                        | IP                    | 0     |           |
+| ISP name              | string        | isp                       | Isp                   | 1     |           |
+| Domain                | string        | domain                    | Domain                | 2     |           |
+| Is in europe          | bool          | is_in_european_union      | IsInEuropeanUnion     | 3     |           |
+| Continent code        | string        | continent_code            | ContinentCode         | 4     |           |
+| Country code          | string        | country_code              | CountryCode           | 5     |           |
+| Country name          | string        | country_name              | CountryName           | 6     |           |
+| Region code           | string        | region_code               | RegionCode            | 7     |           |
+| Region name           | string        | region_name               | RegionName            | 8     |           |
+| City name             | string        | city                      | City                  | 9     |           |
+| Zip code              | string        | zip_code                  | ZipCode               | 10    |           |
+| Time zone             | string        | time_zone                 | TimeZone              | 11    |           |
+| Latitude              | float         | latitude                  | Latitude              | 12    |           |
+| Longitude             | float         | longitude                 | Longitude             | 13    |           |
+| Accuracy radius       | integer       | accuracy_radius           | AccuracyRadius        | 14    |           |
+| Metro code            | integer       | metro_code                | MetroCode             | 15    |           |
+| Autonomous system number (ASN) | integer | asn.autonomous_system_number       | ASN.AutonomousSystemNumber        | 16 |  |
+| Autonomous system organization | string  | asn.autonomous_system_organization | ASN.AutonomousSystemOrganization  | 17 |  |
+| Language              | string        | user.language.language    | User.Language.Language | 18   |           |
+| Language region       | string        | user.language.region      | User.Language.Region  | 19    |           |
+| Language tag          | string        | user.language.tag         | User.Language.Tag     | 20    |           |
+| Operating System      | string        | user.system.os            | User.System.OS        | 21    |           |
+| System architecture   | string        | user.system.os_version    | User.System.OSVersion | 22    |           |
+| Browser               | string        | user.system.browser       | User.System.Browser   | 23    |           |
+| Browser Version       | string        | user.system.version       | User.System.Version   | 24    |           |
+| Device name           | string        | user.system.device        | User.System.Device    | 25    |           |
+| Is mobile user        | bool          | user.system.mobile        | User.System.Mobile    | 26    |           |
+| Is tablet user        | bool          | user.system.tablet        | User.System.Tablet    | 27    |           |
+| Is desktop user       | bool          | user.system.desktop       | User.System.Desktop   | 28    |           |
+| Is bot                | bool          | user.system.bot           | User.System.Bot       | 29    |           |
+| Is tor user           | bool          | user.system.tor           | User.System.Tor       | 30    |           |
+| Last seen in days     | integer       | user.system.last_seen     | User.System.LastSeen  | 31    |           |
+| Usage type            | string        | user.system.usage_type    | User.System.UsageType | 32    | [Available usage types](https://lite.ip2location.com/database/px8-ip-proxytype-country-region-city-isp-domain-usagetype-asn-lastseen) |
+| Proxy type            | string        | user.system.proxy_type    | User.System.ProxyType | 33    | [Available proxy types](https://lite.ip2location.com/database/px8-ip-proxytype-country-region-city-isp-domain-usagetype-asn-lastseen) |
+| Proxy                 | bool          | user.system.proxy         | User.System.Proxy     | 34    |           |
+
+#### CSV
 ```bash
 curl :8080/csv/
 ```
 ```
-000.000.000.000,Nordamerika,US,USA,NV,,Las Vegas,89129,America/Los_Angeles,36.2473,-115.2821,839,0,20
+000.000.000.000,,,0,Nordamerika,US,USA,NV,,Las Vegas,89129,America/Los_Angeles,36.2473,-115.2821,839,0,20,209,"CenturyLink Communications, LLC"
 ```
 
-### XML
+#### XML
 ```bash
 curl :8080/xml/
 ```
 ```xml
 <Response>
     <IP>000.000.000.000</IP>
+    <Isp/>
+    <Domain/>
     <IsInEuropeanUnion>false</IsInEuropeanUnion>
     <ContinentCode>Nordamerika</ContinentCode>
     <CountryCode>US</CountryCode>
@@ -207,13 +320,15 @@ curl :8080/xml/
 </Response>
 ```
 
-### JSON
+#### JSON
 ```bash
 curl :8080/json/
 ```
 ```json
 {
   "ip": "000.000.000.000",
+  "isp": "",
+  "domain": "",
   "is_in_european_union": false,
   "continent_code": "Nordamerika",
   "country_code": "US",
@@ -239,6 +354,8 @@ curl :8080/json/?user
 ```json
 {
   "ip": "000.000.000.000",
+  "isp": "",
+  "domain": "",
   "is_in_european_union": false,
   "continent_code": "Nordamerika",
   "country_code": "US",
@@ -272,19 +389,25 @@ curl :8080/json/?user
       "tablet": false,
       "desktop": true,
       "bot": false,
-      "tor": true
+      "tor": false,
+      "last_seen": 0,
+      "usage_type": "",
+      "proxy_type": "",
+      "is_proxy": false
     }
   }
 }
 ```
 
-### JSONP
+#### JSONP
 ```bash
 curl :8080/json/?callback=foobar
 ```
 ```javascript
 foobar({
   "ip": "000.000.000.000",
+  "isp": "",
+  "domain": "",
   "is_in_european_union": false,
   "continent_code": "Nordamerika",
   "country_code": "US",

@@ -11,6 +11,8 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/fiorix/go-listener/listener"
+
+	"../utils/updater"
 )
 
 type writerFunc func(w http.ResponseWriter, r *http.Request, d *responseRecord)
@@ -27,7 +29,6 @@ func (s *Server) NewHandler() (http.Handler, error) {
 	mux.GET("/csv/*host",  s.registerHandler(csvResponse))
 	mux.GET("/xml/*host",  s.registerHandler(xmlResponse))
 	mux.GET("/json/*host", s.registerHandler(jsonResponse))
-	go s.watchEvents()
 	return mux, nil
 }
 
@@ -40,17 +41,19 @@ func (s *Server) initCors() {
 }
 
 // watchEvents logs and collect metrics of database events.
-func (s *Server) watchEvents() {
-	for {
-		select {
-		case file := <-s.Api.db.NotifyOpen():
-			log.Println("database loaded:", file)
-		case err := <-s.Api.db.NotifyError():
-			log.Println("database error:", err)
-		case msg := <-s.Api.db.NotifyInfo():
-			log.Println("database info:", msg)
-		case <-s.Api.db.NotifyClose():
-			return
+func (s *Server) watchEvents(updater *updater.Config) {
+	if !s.Config.Silent {
+		for {
+			select {
+			case file := <-updater.NotifyOpen():
+				log.Println("database loaded:", file)
+			case err := <-updater.NotifyError():
+				log.Println("database error:", err)
+			case msg := <-updater.NotifyInfo():
+				log.Println("database info:", msg)
+			case <-updater.NotifyClose():
+				return
+			}
 		}
 	}
 }
@@ -71,7 +74,9 @@ func (s *Server) listenerOpts() []listener.Option {
 }
 
 func (s *Server) runServer(f http.Handler) {
-	log.Println("geoip http server starting on", s.Config.ServerAddr)
+	if !s.Config.Silent {
+		log.Println("geoip http server starting on", s.Config.ServerAddr)
+	}
 	ln, err := listener.New(s.Config.ServerAddr, s.listenerOpts()...)
 	if err != nil {
 		log.Fatal(err)

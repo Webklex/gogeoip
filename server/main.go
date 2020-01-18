@@ -2,7 +2,8 @@ package server
 
 import (
 	"../utils/config"
-	"../utils/db"
+	"../utils/i2ldb"
+	"../utils/mmdb"
 	"../utils/tor"
 	"encoding/xml"
 	"github.com/rs/cors"
@@ -32,14 +33,17 @@ type Server struct {
 }
 
 type GeoIpQuery struct {
-	db.DefaultQuery
-	db.ASNDefaultQuery
-	db.TorDefaultQuery
+	i2ldb.ProxyDefaultQuery
+	mmdb.DefaultQuery
+	mmdb.ASNDefaultQuery
+	mmdb.TorDefaultQuery
 }
 
 type responseRecord struct {
 	XMLName     		xml.Name	`xml:"Response" json:"-"`
 	IP          		string  	`json:"ip"`
+	Isp 				string		`json:"isp"`
+	Domain 				string		`json:"domain"`
 	IsInEuropeanUnion 	bool  		`json:"is_in_european_union"`
 	ContinentCode 		string  	`json:"continent_code"`
 	CountryCode 		string  	`json:"country_code"`
@@ -85,12 +89,17 @@ type SystemRecord struct {
 	Desktop   	bool 	`json:"desktop"`
 	Bot   		bool 	`json:"bot"`
 	Tor   		bool 	`json:"tor"`
+	LastSeen 	uint	`json:"last_seen"`
+	UsageType 	string	`json:"usage_type"`
+	ProxyType 	string	`json:"proxy_type"`
+	Proxy 		bool	`json:"proxy"`
 }
 
 type ApiHandler struct {
-	db    *db.DB
-	asnDB *db.DB
+	db    *mmdb.DB
+	asnDB *mmdb.DB
 	torDB *tor.Config
+	i2lDB *i2ldb.Config
 	cors  *cors.Cors
 }
 
@@ -113,9 +122,10 @@ func NewServerConfig(c *config.Config) *Server {
 		RateLimit: NewRateLimit(rate.Limit(c.RateLimitLimit), c.RateLimitBurst),
 
 		Api: &ApiHandler{
-			db: db.NewDefaultConfig(c, c.ProductID),
-			asnDB: db.NewDefaultConfig(c, c.ASNProductID),
+			db:    mmdb.NewDefaultConfig(c, c.MMProductID),
+			asnDB: mmdb.NewDefaultConfig(c, c.MMASNProductID),
 			torDB: tor.NewDefaultConfig(c),
+			i2lDB: i2ldb.NewDefaultConfig(c),
 		},
 	}
 
@@ -123,8 +133,12 @@ func NewServerConfig(c *config.Config) *Server {
 }
 
 func (s *Server) Start() {
+	go s.watchEvents(s.Api.torDB.Updater)
+	go s.watchEvents(s.Api.db.Updater)
+	go s.watchEvents(s.Api.asnDB.Updater)
+	go s.watchEvents(s.Api.i2lDB.Updater)
+
 	_ = s.openDB()
-	go s.watchEvents()
 
 	if s.Config.LogToStdout {
 		log.SetOutput(os.Stdout)

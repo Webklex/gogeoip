@@ -1,4 +1,4 @@
-package db
+package updater
 
 type Notifier struct {
 
@@ -9,49 +9,49 @@ type Notifier struct {
 }
 
 // NotifyClose returns a channel that is closed when the database is closed.
-func (d *DB) NotifyClose() <-chan struct{} {
-	return d.Notifier.Quit
+func (c *Config) NotifyClose() <-chan struct{} {
+	return c.Notifier.Quit
 }
 
 // NotifyOpen returns a channel that notifies when a new database is
 // loaded or reloaded. This can be used to monitor background updates
-// when the DB points to a URL.
-func (d *DB) NotifyOpen() (filename <-chan string) {
-	return d.Notifier.Open
+// when the Config points to a URL.
+func (c *Config) NotifyOpen() (filename <-chan string) {
+	return c.Notifier.Open
 }
 
 // NotifyError returns a channel that notifies when an error occurs
-// while downloading or reloading a DB that points to a URL.
-func (d *DB) NotifyError() (errChan <-chan error) {
-	return d.Notifier.Error
+// while downloading or reloading a Config that points to a URL.
+func (c *Config) NotifyError() (errChan <-chan error) {
+	return c.Notifier.Error
 }
 
 // NotifyInfo returns a channel that notifies informational messages
 // while downloading or reloading.
-func (d *DB) NotifyInfo() <-chan string {
-	return d.Notifier.Info
+func (c *Config) NotifyInfo() <-chan string {
+	return c.Notifier.Info
 }
 
-func (d *DB) sendError(err error) {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-	if d.closed {
+func (c *Config) SendError(err error) {
+	c.Mu.RLock()
+	defer c.Mu.RUnlock()
+	if c.Closed {
 		return
 	}
 	select {
-	case d.Notifier.Error <- err:
+	case c.Notifier.Error <- err:
 	default:
 	}
 }
 
-func (d *DB) sendInfo(message string) {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-	if d.closed {
+func (c *Config) SendInfo(message string) {
+	c.Mu.RLock()
+	defer c.Mu.RUnlock()
+	if c.Closed {
 		return
 	}
 	select {
-	case d.Notifier.Info <- message:
+	case c.Notifier.Info <- message:
 	default:
 	}
 }

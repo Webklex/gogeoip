@@ -11,6 +11,14 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 ### Added
 - NaN
 
+## [1.1.0] - 2020-01-19
+- ip2location db added
+- Get ISP information
+- Get domain information
+- Get usage information
+- Get proxy information
+- Available config parameters extended
+
 ## [1.0.4] - 2020-01-18
 - Population density omitted if empty or null
 - Detect tor users

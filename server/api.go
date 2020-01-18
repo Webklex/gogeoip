@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"github.com/go-web/httpmux"
 	"github.com/mileusna/useragent"
 	"golang.org/x/text/language"
@@ -19,15 +20,10 @@ import (
 
 // openDB opens and returns the IP database file or URL.
 func (s *Server) openDB() error {
-	if _, err := s.Api.db.OpenURL(); err != nil {
-		return err
-	}
-	if _, err := s.Api.asnDB.OpenURL(); err != nil {
-		return err
-	}
-	if _, err := s.Api.torDB.OpenURL(); err != nil {
-		return err
-	}
+	if _, err := s.Api.i2lDB.Start(); err != nil {return err}
+	if _, err := s.Api.torDB.Start(); err != nil {return err}
+	if _, err := s.Api.db.Start(); err != nil {return err}
+	if _, err := s.Api.asnDB.Start(); err != nil {return err}
 
 	return nil
 }
@@ -43,6 +39,7 @@ func (s *Server) IpLookUp(writer writerFunc) http.HandlerFunc {
 
 		ip, q := ips[rand.Intn(len(ips))], &GeoIpQuery{}
 		if err := s.Api.db.Lookup(ip, &q.DefaultQuery); err != nil {
+			fmt.Println(err)
 			http.Error(w, "Try again later.", http.StatusServiceUnavailable)
 			return
 		}
@@ -50,7 +47,10 @@ func (s *Server) IpLookUp(writer writerFunc) http.HandlerFunc {
 			http.Error(w, "Try again later.", http.StatusServiceUnavailable)
 			return
 		}
-		w.Header().Set("X-Database-Date", s.Api.db.Date().Format(http.TimeFormat))
+
+		q.ProxyDefaultQuery = s.Api.i2lDB.Lookup(ip)
+
+		w.Header().Set("X-Database-Date", s.Api.db.Updater.Date().Format(http.TimeFormat))
 		lang := getRequestParam(r, "lang")
 
 		q.IsTorUser = s.Api.torDB.Lookup(ip)
@@ -64,14 +64,6 @@ func (q *GeoIpQuery) Translate(names map[string]string, lang string) string {
 		return val
 	}
 	return names["en"]
-}
-
-func convertFloat32ToFloat64(q []float32) []float64{
-	result := make([]float64, len(q))
-	for i, val := range q {
-		result[i] = float64(val)
-	}
-	return result
 }
 
 func getMostPreferredLanguage(tag []language.Tag, q []float32) language.Tag {
@@ -91,19 +83,21 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *resp
 	lang = parseAcceptLanguage(lang, q.Country.Names)
 
 	r := &responseRecord{
-		IP:          ip.String(),
-		IsInEuropeanUnion: q.Country.IsInEuropeanUnion,
-		CountryCode: q.Country.ISOCode,
-		ContinentCode: q.Translate(q.Continent.Names, lang),
-		CountryName: q.Translate(q.Country.Names, lang),
-		City:        q.Translate(q.City.Names, lang),
-		ZipCode:     q.Postal.Code,
-		TimeZone:    q.Location.TimeZone,
-		Latitude:    roundFloat(q.Location.Latitude, .5, 4),
-		Longitude:   roundFloat(q.Location.Longitude, .5, 4),
-		MetroCode:   q.Location.MetroCode,
-		PopulationDensity:   q.Location.PopulationDensity,
-		AccuracyRadius:   q.Location.AccuracyRadius,
+		IP:          		ip.String(),
+		Isp:				q.Isp,
+		Domain:				q.Domain,
+		IsInEuropeanUnion: 	q.Country.IsInEuropeanUnion,
+		CountryCode: 		q.Country.ISOCode,
+		ContinentCode: 		q.Translate(q.Continent.Names, lang),
+		CountryName: 		q.Translate(q.Country.Names, lang),
+		City:        		q.Translate(q.City.Names, lang),
+		ZipCode:     		q.Postal.Code,
+		TimeZone:    		q.Location.TimeZone,
+		Latitude:    		roundFloat(q.Location.Latitude, .5, 4),
+		Longitude:   		roundFloat(q.Location.Longitude, .5, 4),
+		MetroCode:   		q.Location.MetroCode,
+		PopulationDensity:  q.Location.PopulationDensity,
+		AccuracyRadius:   	q.Location.AccuracyRadius,
 		ASN: &ASNRecord{
 			AutonomousSystemNumber:       q.AutonomousSystemNumber,
 			AutonomousSystemOrganization: q.AutonomousSystemOrganization,
@@ -131,16 +125,20 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *resp
 			},
 
 			System:   &SystemRecord{
-				OS:      userAgent.OS,
-				Browser: userAgent.Name,
-				Version: userAgent.Version,
-				OSVersion: userAgent.OSVersion,
-				Device: userAgent.Device,
-				Mobile: userAgent.Mobile,
-				Tablet: userAgent.Tablet,
-				Desktop: userAgent.Desktop,
-				Bot: userAgent.Bot,
-				Tor: q.IsTorUser,
+				OS:      	userAgent.OS,
+				Browser: 	userAgent.Name,
+				Version: 	userAgent.Version,
+				OSVersion: 	userAgent.OSVersion,
+				Device: 	userAgent.Device,
+				Mobile: 	userAgent.Mobile,
+				Tablet: 	userAgent.Tablet,
+				Desktop: 	userAgent.Desktop,
+				Bot: 		userAgent.Bot,
+				Tor: 		q.IsTorUser,
+				ProxyType: 	q.ProxyType,
+				Proxy: 		q.Proxy,
+				UsageType: 	q.UsageType,
+				LastSeen:	uint(q.LastSeen),
 			},
 		}
 	}
@@ -163,9 +161,12 @@ func (rr *responseRecord) String() string {
 		var SystemDesktop int;if rr.User.System.Desktop {SystemDesktop = 1}
 		var SystemBot int;if rr.User.System.Bot {SystemBot = 1}
 		var SystemTor int;if rr.User.System.Tor {SystemTor = 1}
+		var SystemIsProxy int;if rr.User.System.Proxy {SystemIsProxy = 1}
 
 		err = w.Write([]string{
 			rr.IP,
+			rr.Isp,
+			rr.Domain,
 			strconv.Itoa(inEU),
 			rr.ContinentCode,
 			rr.CountryCode,
@@ -195,10 +196,16 @@ func (rr *responseRecord) String() string {
 			strconv.Itoa(SystemDesktop),
 			strconv.Itoa(SystemBot),
 			strconv.Itoa(SystemTor),
+			rr.User.System.ProxyType,
+			strconv.Itoa(SystemIsProxy),
+			rr.User.System.UsageType,
+			strconv.Itoa(int(rr.User.System.LastSeen)),
 		})
 	}else{
 		err = w.Write([]string{
 			rr.IP,
+			rr.Isp,
+			rr.Domain,
 			strconv.Itoa(inEU),
 			rr.ContinentCode,
 			rr.CountryCode,

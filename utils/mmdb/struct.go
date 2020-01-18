@@ -1,25 +1,18 @@
-package db
+package mmdb
 
 import (
 	"../config"
+	"../updater"
 	"github.com/oschwald/maxminddb-golang"
-	"sync"
-	"time"
 )
 
 // DB is the IP geolocation database.
 type DB struct {
-	File        		string            	// Database file name.
 	reader      		*maxminddb.Reader 	// Actual db object.
-	closed      		bool              	// Mark this db as closed.
-	lastUpdated 		time.Time         	// Last time the db was updated.
-	mu          		sync.RWMutex      	// Protects all the above.
 
-	Notifier 			*Notifier			// Holds all notification channels
+	Updater 			*updater.Config			// Holds all notification channels
 	Config 				*config.Config		// Shared default configuration
 
-	updateUrl			string				// MaxMind update url
-	dbArchive			string				// Local cached copy of a database downloaded from a URL.
 	ErrUnavailable		error				// ErrUnavailable may be returned by DB.Lookup when the database
 	// points to a URL and is not yet available because it's being
 	// downloaded in background.
