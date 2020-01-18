@@ -39,6 +39,7 @@ func DefaultConfig() *Config {
 		ReadTimeout:         30 * time.Second,
 		WriteTimeout:        15 * time.Second,
 		UpdateInterval:      24 * time.Hour,
+		TorUpdateInterval:   30 * time.Minute,
 		RetryInterval:       2 * time.Hour,
 		RateLimitLimit: 	 1,
 		RateLimitBurst: 	 3,
@@ -50,6 +51,7 @@ func DefaultConfig() *Config {
 		RateLimitBackend:    "redis",
 		RateLimitInterval:   time.Hour,
 		UpdatesHost:         "download.maxmind.com",
+		TorExitCheck:		 "8.8.8.8",
 
 		// https://www.maxmind.com/en/accounts/{UserID}/geoip/downloads?direct=1
 		ProductID:           "GeoLite2-City",

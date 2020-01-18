@@ -25,6 +25,9 @@ func (s *Server) openDB() error {
 	if _, err := s.Api.asnDB.OpenURL(); err != nil {
 		return err
 	}
+	if _, err := s.Api.torDB.OpenURL(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -50,6 +53,7 @@ func (s *Server) IpLookUp(writer writerFunc) http.HandlerFunc {
 		w.Header().Set("X-Database-Date", s.Api.db.Date().Format(http.TimeFormat))
 		lang := getRequestParam(r, "lang")
 
+		q.IsTorUser = s.Api.torDB.Lookup(ip)
 		resp := q.Record(ip, lang, r)
 		writer(w, r, resp)
 	}
@@ -136,6 +140,7 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *resp
 				Tablet: userAgent.Tablet,
 				Desktop: userAgent.Desktop,
 				Bot: userAgent.Bot,
+				Tor: q.IsTorUser,
 			},
 		}
 	}
@@ -157,6 +162,7 @@ func (rr *responseRecord) String() string {
 		var SystemTablet int;if rr.User.System.Tablet {SystemTablet = 1}
 		var SystemDesktop int;if rr.User.System.Desktop {SystemDesktop = 1}
 		var SystemBot int;if rr.User.System.Bot {SystemBot = 1}
+		var SystemTor int;if rr.User.System.Tor {SystemTor = 1}
 
 		err = w.Write([]string{
 			rr.IP,
@@ -188,6 +194,7 @@ func (rr *responseRecord) String() string {
 			strconv.Itoa(SystemTablet),
 			strconv.Itoa(SystemDesktop),
 			strconv.Itoa(SystemBot),
+			strconv.Itoa(SystemTor),
 		})
 	}else{
 		err = w.Write([]string{

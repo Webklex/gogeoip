@@ -78,7 +78,7 @@ func (d *DB) watchFile() error {
 	if err != nil {
 		return err
 	}
-	dbdir, err := d.makeDir(d.dbArchive)
+	dbdir, err := MakeDir(d.dbArchive)
 	if err != nil {
 		return err
 	}

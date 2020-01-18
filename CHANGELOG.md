@@ -9,7 +9,11 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 - NaN
 
 ### Added
+- NaN
+
+## [1.0.4] - 2020-01-18
 - Population density omitted if empty or null
+- Detect tor users
 
 ## [1.0.3] - 2020-01-18
 - ASN information added

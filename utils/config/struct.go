@@ -29,6 +29,7 @@ type Config struct {
 	ReadTimeout         time.Duration `json:"READ_TIMEOUT"`
 	WriteTimeout        time.Duration `json:"WRITE_TIMEOUT"`
 	UpdateInterval      time.Duration `json:"UPDATE_INTERVAL"`
+	TorUpdateInterval   time.Duration `json:"TOR_UPDATE_INTERVAL"`
 	RetryInterval       time.Duration `json:"RETRY_INTERVAL"`
 	UseXForwardedFor    bool          `json:"USE_X_FORWARDED_FOR"`
 	Silent              bool          `json:"SILENT"`
@@ -48,6 +49,7 @@ type Config struct {
 	ProductID           string        `json:"PRODUCT_ID"`
 	ASNProductID        string        `json:"ASN_PRODUCT_ID"`
 	GuiDir              string        `json:"GUI"`
+	TorExitCheck      	string 		  `json:"TOR_EXIT"`
 
 	File     			string 		  `json:"-"`
 	RootDir     		string 		  `json:"-"`

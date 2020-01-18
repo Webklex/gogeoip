@@ -3,6 +3,7 @@ package server
 import (
 	"../utils/config"
 	"../utils/db"
+	"../utils/tor"
 	"encoding/xml"
 	"github.com/rs/cors"
 	"golang.org/x/time/rate"
@@ -33,6 +34,7 @@ type Server struct {
 type GeoIpQuery struct {
 	db.DefaultQuery
 	db.ASNDefaultQuery
+	db.TorDefaultQuery
 }
 
 type responseRecord struct {
@@ -82,11 +84,13 @@ type SystemRecord struct {
 	Tablet   	bool 	`json:"tablet"`
 	Desktop   	bool 	`json:"desktop"`
 	Bot   		bool 	`json:"bot"`
+	Tor   		bool 	`json:"tor"`
 }
 
 type ApiHandler struct {
 	db    *db.DB
 	asnDB *db.DB
+	torDB *tor.Config
 	cors  *cors.Cors
 }
 
@@ -111,6 +115,7 @@ func NewServerConfig(c *config.Config) *Server {
 		Api: &ApiHandler{
 			db: db.NewDefaultConfig(c, c.ProductID),
 			asnDB: db.NewDefaultConfig(c, c.ASNProductID),
+			torDB: tor.NewDefaultConfig(c),
 		},
 	}
 

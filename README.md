@@ -34,6 +34,7 @@ GoGeoIP - a lightweight geoip api written in GO. [Live Demo](https://www.gogeoip
 * Serve the default [GeoLite2 City](https://dev.maxmind.com/geoip/geoip2/geolite2/) free database that is downloaded and updated automatically in background on a configurable schedule, or
 * Serve the commercial [GeoIP2 City](https://www.maxmind.com/en/geoip2-city) database from MaxMind, either as a local file that you provide and update periodically (so the server can reload it), or configured to be downloaded periodically using your API key
 * Multiple languages are supported (en, ru, es, jp, fr, de)
+* Detect tor and bot users
 * Supports Linux, OS X, FreeBSD, and Windows
 
 ### Requirements
@@ -270,7 +271,8 @@ curl :8080/json/?user
       "mobile": false,
       "tablet": false,
       "desktop": true,
-      "bot": false
+      "bot": false,
+      "tor": true
     }
   }
 }

@@ -80,3 +80,7 @@ type ASNDefaultQuery struct {
 	AutonomousSystemNumber uint `maxminddb:"autonomous_system_number"`
 	AutonomousSystemOrganization string `maxminddb:"autonomous_system_organization"`
 }
+
+type TorDefaultQuery struct {
+	IsTorUser bool
+}

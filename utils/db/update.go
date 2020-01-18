@@ -46,7 +46,7 @@ func (d *DB) runUpdate(url string) error {
 	if err != nil {
 		return err
 	}
-	err = d.renameFile(tmpFile, d.dbArchive)
+	err = RenameFile(tmpFile, d.dbArchive)
 	if err != nil {
 		// Cleanup the temp file if renaming failed.
 		if err := os.RemoveAll(tmpFile); err != nil {}

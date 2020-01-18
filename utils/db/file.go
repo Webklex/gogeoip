@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func (d *DB) makeDir(filename string) (dbdir string, err error) {
+func MakeDir(filename string) (dbdir string, err error) {
 	dbdir = filepath.Dir(filename)
 	_, err = os.Stat(dbdir)
 	if err != nil {
@@ -22,9 +22,9 @@ func (d *DB) makeDir(filename string) (dbdir string, err error) {
 	return dbdir, nil
 }
 
-func (d *DB) renameFile(fromName string, toName string) error {
+func RenameFile(fromName string, toName string) error {
 	if err := os.Rename(toName, toName+".bak"); err != nil {}
-	if _, err := d.makeDir(toName); err != nil {
+	if _, err := MakeDir(toName); err != nil {
 		return err
 	}
 	return os.Rename(fromName, toName)
