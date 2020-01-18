@@ -39,7 +39,6 @@ func (s *Server) IpLookUp(writer writerFunc) http.HandlerFunc {
 		}
 
 		ip, q := ips[rand.Intn(len(ips))], &GeoIpQuery{}
-
 		if err := s.Api.db.Lookup(ip, &q.DefaultQuery); err != nil {
 			http.Error(w, "Try again later.", http.StatusServiceUnavailable)
 			return
@@ -86,7 +85,6 @@ func getMostPreferredLanguage(tag []language.Tag, q []float32) language.Tag {
 
 func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *responseRecord {
 	lang = parseAcceptLanguage(lang, q.Country.Names)
-	// parse header
 
 	r := &responseRecord{
 		IP:          ip.String(),
@@ -127,7 +125,7 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *resp
 				Region: region.String(),
 				Tag: plang.String(),
 			},
-			// Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/79.0.3945.79 Chrome/79.0.3945.79 Safari/537.36
+
 			System:   &SystemRecord{
 				OS:      userAgent.OS,
 				Browser: userAgent.Name,

@@ -49,7 +49,7 @@ type responseRecord struct {
 	TimeZone    		string  	`json:"time_zone"`
 	Latitude    		float64 	`json:"latitude"`
 	Longitude   		float64 	`json:"longitude"`
-	PopulationDensity   uint     	`json:"population_density"`
+	PopulationDensity   uint     	`json:"population_density,omitempty"`
 	AccuracyRadius   	uint  		`json:"accuracy_radius"`
 	MetroCode   		uint    	`json:"metro_code"`
 	ASN					*ASNRecord  `json:"asn,omitempty"`
