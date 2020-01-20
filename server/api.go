@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/go-web/httpmux"
 	"github.com/mileusna/useragent"
+	"github.com/pariz/gountries"
 	"golang.org/x/text/language"
 	"io"
 	"math"
@@ -66,6 +67,13 @@ func (q *GeoIpQuery) Translate(names map[string]string, lang string) string {
 	return names["en"]
 }
 
+func (q *GeoIpQuery) TranslateCountry(t map[string]gountries.BaseLang, lang string) *gountries.BaseLang {
+	if val, ok := t["ENG"]; ok {
+		return &val
+	}
+	return &gountries.BaseLang{}
+}
+
 func getMostPreferredLanguage(tag []language.Tag, q []float32) language.Tag {
 	lang := language.Tag{}
 	score := 0.0
@@ -79,33 +87,95 @@ func getMostPreferredLanguage(tag []language.Tag, q []float32) language.Tag {
 	return lang
 }
 
-func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *responseRecord {
+func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *ResponseRecord {
 	lang = parseAcceptLanguage(lang, q.Country.Names)
 
-	r := &responseRecord{
-		IP:          		ip.String(),
-		Isp:				q.Isp,
-		Domain:				q.Domain,
-		IsInEuropeanUnion: 	q.Country.IsInEuropeanUnion,
-		CountryCode: 		q.Country.ISOCode,
-		ContinentCode: 		q.Translate(q.Continent.Names, lang),
-		CountryName: 		q.Translate(q.Country.Names, lang),
-		City:        		q.Translate(q.City.Names, lang),
-		ZipCode:     		q.Postal.Code,
-		TimeZone:    		q.Location.TimeZone,
-		Latitude:    		roundFloat(q.Location.Latitude, .5, 4),
-		Longitude:   		roundFloat(q.Location.Longitude, .5, 4),
-		MetroCode:   		q.Location.MetroCode,
-		PopulationDensity:  q.Location.PopulationDensity,
-		AccuracyRadius:   	q.Location.AccuracyRadius,
-		ASN: &ASNRecord{
-			AutonomousSystemNumber:       q.AutonomousSystemNumber,
-			AutonomousSystemOrganization: q.AutonomousSystemOrganization,
-		},
+	//CountryCode: 		q.Country.ISOCode,
+	//ContinentCode: 		q.Translate(q.Continent.Names, lang),
+	//CountryName: 		q.Translate(q.Country.Names, lang),
+	query := gountries.New()
+	country, err := query.FindCountryByAlpha(q.Country.ISOCode)
+	if err != nil {
+		country = gountries.Country{
+			Name: struct {
+				gountries.BaseLang `yaml:",inline"`
+				Native             map[string]gountries.BaseLang
+			}{},
+			EuMember:     false,
+			LandLocked:   false,
+			Nationality:  "",
+			TLDs:         nil,
+			Languages:    nil,
+			Translations: make(map[string]gountries.BaseLang),
+			Currencies:   nil,
+			Borders:      nil,
+			Codes:        gountries.Codes{},
+			Geo:          gountries.Geo{},
+			Coordinates:  gountries.Coordinates{},
+		}
 	}
+
+	c := make([]*CurrencyRecord, len(country.Currencies))
+	for i := range c {
+		c[i] = &CurrencyRecord{
+			Code: country.Currencies[i],
+		}
+	}
+
+	r := &ResponseRecord{
+		Location: &LocationRecord{
+			MetroCode:      q.Location.MetroCode,
+			City:           q.Translate(q.City.Names, lang),
+			ZipCode:        q.Postal.Code,
+			TimeZone:       q.Location.TimeZone,
+			Latitude:       roundFloat(q.Location.Latitude, .5, 4),
+			Longitude:      roundFloat(q.Location.Longitude, .5, 4),
+			AccuracyRadius: q.Location.AccuracyRadius,
+			Country:        &CountryRecord{
+				Code: q.Country.ISOCode,
+				Name: country.Name.Common,
+				FullName: country.Name.Official,
+				Currency: c,
+				Borders: country.Borders,
+				CIOC: country.CIOC,
+				CCN3: country.CCN3,
+				CallCode: country.CallingCodes,
+				InternationalPrefix: country.InternationalPrefix,
+				Capital: country.Capital,
+				Area: country.Area,
+				Latitude: country.Latitude,
+				Longitude: country.Longitude,
+				MaxLatitude: country.MaxLatitude,
+				MaxLongitude: country.MaxLongitude,
+				MinLatitude: country.MinLatitude,
+				MinLongitude: country.MinLongitude,
+				Continent:   &ContinentRecord{
+					Code: "",
+					Name: country.Continent,
+				},
+			},
+		},
+		Network:  &NetworkRecord{
+			AS:        &ASRecord{
+				Number: q.AutonomousSystemNumber,
+				Name: 	q.AutonomousSystemOrganization,
+			},
+			IP:         ip.String(),
+			Isp:	    q.Isp,
+			Tld:	    country.TLDs,
+			Domain:	    q.Domain,
+			Tor: 		q.IsTorUser,
+			ProxyType: 	q.ProxyType,
+			Proxy: 		q.Proxy,
+			UsageType: 	q.UsageType,
+			LastSeen:	uint(q.LastSeen),
+		},
+		User: &UserRecord{},
+	}
+
 	if len(q.Region) > 0 {
-		r.RegionCode = q.Region[0].ISOCode
-		r.RegionName = q.Region[0].Names[lang]
+		r.Location.RegionCode = q.Region[0].ISOCode
+		r.Location.RegionName = q.Region[0].Names[lang]
 	}
 
 	if len(request.URL.Query()["user"]) > 0 {
@@ -116,112 +186,151 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *resp
 		region, _ := plang.Region()
 
 		userAgent := ua.Parse(request.Header.Get("User-Agent"))
-
-		r.User = &UserRecord{
-			Language: &LanguageRecord{
-				Language: base.String(),
-				Region: region.String(),
-				Tag: plang.String(),
-			},
-
-			System:   &SystemRecord{
-				OS:      	userAgent.OS,
-				Browser: 	userAgent.Name,
-				Version: 	userAgent.Version,
-				OSVersion: 	userAgent.OSVersion,
-				Device: 	userAgent.Device,
-				Mobile: 	userAgent.Mobile,
-				Tablet: 	userAgent.Tablet,
-				Desktop: 	userAgent.Desktop,
-				Bot: 		userAgent.Bot,
-				Tor: 		q.IsTorUser,
-				ProxyType: 	q.ProxyType,
-				Proxy: 		q.Proxy,
-				UsageType: 	q.UsageType,
-				LastSeen:	uint(q.LastSeen),
-			},
+		r.System = &SystemRecord{
+			OS:      	userAgent.OS,
+			Browser: 	userAgent.Name,
+			Version: 	userAgent.Version,
+			OSVersion: 	userAgent.OSVersion,
+			Device: 	userAgent.Device,
+			Mobile: 	userAgent.Mobile,
+			Tablet: 	userAgent.Tablet,
+			Desktop: 	userAgent.Desktop,
 		}
+		r.User = &UserRecord{Language:&LanguageRecord{
+			Language: base.String(),
+			Region:   region.String(),
+			Tag:      plang.String(),
+		}}
+
+		r.Network.Bot = userAgent.Bot
 	}
 
 	return r
 }
 
-func (rr *responseRecord) String() string {
+func (rr *ResponseRecord) String() string {
 	b := &bytes.Buffer{}
 	w := csv.NewWriter(b)
 	w.UseCRLF = true
-	var inEU int
 	var err error
-	if rr.IsInEuropeanUnion {
-		inEU = 1
+
+	currency := make([]string, len(rr.Location.Country.Currency))
+	for i := range rr.Location.Country.Currency {
+		currency[i] = rr.Location.Country.Currency[i].Code
 	}
-	if rr.User != nil {
-		var SystemMobile int;if rr.User.System.Mobile {SystemMobile = 1}
-		var SystemTablet int;if rr.User.System.Tablet {SystemTablet = 1}
-		var SystemDesktop int;if rr.User.System.Desktop {SystemDesktop = 1}
-		var SystemBot int;if rr.User.System.Bot {SystemBot = 1}
-		var SystemTor int;if rr.User.System.Tor {SystemTor = 1}
-		var SystemIsProxy int;if rr.User.System.Proxy {SystemIsProxy = 1}
+	var SystemBot int;if rr.Network.Bot {SystemBot = 1}
+	var SystemTor int;if rr.Network.Tor {SystemTor = 1}
+	var SystemProxy int;if rr.Network.Proxy {SystemProxy = 1}
+
+	if rr.User != nil && rr.System != nil {
+
+		var SystemMobile int;if rr.System.Mobile {SystemMobile = 1}
+		var SystemTablet int;if rr.System.Tablet {SystemTablet = 1}
+		var SystemDesktop int;if rr.System.Desktop {SystemDesktop = 1}
 
 		err = w.Write([]string{
-			rr.IP,
-			rr.Isp,
-			rr.Domain,
-			strconv.Itoa(inEU),
-			rr.ContinentCode,
-			rr.CountryCode,
-			rr.CountryName,
-			rr.RegionCode,
-			rr.RegionName,
-			rr.City,
-			rr.ZipCode,
-			rr.TimeZone,
-			strconv.FormatFloat(rr.Latitude, 'f', 4, 64),
-			strconv.FormatFloat(rr.Longitude, 'f', 4, 64),
-			strconv.Itoa(int(rr.MetroCode)),
-			strconv.Itoa(int(rr.PopulationDensity)),
-			strconv.Itoa(int(rr.AccuracyRadius)),
-			strconv.Itoa(int(rr.ASN.AutonomousSystemNumber)),
-			rr.ASN.AutonomousSystemOrganization,
-			rr.User.Language.Language,
-			rr.User.Language.Region,
-			rr.User.Language.Tag,
-			rr.User.System.OS,
-			rr.User.System.Browser,
-			rr.User.System.Version,
-			rr.User.System.OSVersion,
-			rr.User.System.Device,
+			rr.Network.IP,
+			strconv.Itoa(int(rr.Network.AS.Number)),
+			rr.Network.AS.Name,
+			rr.Network.Isp,
+			rr.Network.Domain,
+			strings.Join(rr.Network.Tld, "/"),
+			strconv.Itoa(SystemBot),
+			strconv.Itoa(SystemTor),
+			strconv.Itoa(SystemProxy),
+			rr.Network.ProxyType,
+			strconv.Itoa(int(rr.Network.LastSeen)),
+			rr.Network.UsageType,
+
+			rr.Location.RegionCode,
+			rr.Location.RegionName,
+			rr.Location.City,
+			strconv.Itoa(int(rr.Location.MetroCode)),
+			rr.Location.ZipCode,
+			rr.Location.TimeZone,
+			strconv.FormatFloat(rr.Location.Longitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Latitude, 'f', 4, 64),
+			strconv.Itoa(int(rr.Location.AccuracyRadius)),
+
+			rr.Location.Country.Code,
+			rr.Location.Country.CIOC,
+			rr.Location.Country.CCN3,
+			strings.Join(rr.Location.Country.CallCode, "/"),
+			rr.Location.Country.InternationalPrefix,
+			rr.Location.Country.Capital,
+			rr.Location.Country.Name,
+			rr.Location.Country.FullName,
+			strconv.FormatFloat(rr.Location.Country.Area, 'f', 4, 64),
+			strings.Join(rr.Location.Country.Borders, "/"),
+			strconv.FormatFloat(rr.Location.Country.Latitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.Longitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MaxLatitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MaxLongitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MinLatitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MinLongitude, 'f', 4, 64),
+			strings.Join(currency, "/"),
+			rr.Location.Country.Continent.Code,
+			rr.Location.Country.Continent.Name,
+			rr.Location.Country.Continent.SubRegion,
+
+			rr.System.OS,
+			rr.System.Browser,
+			rr.System.Version,
+			rr.System.OSVersion,
+			rr.System.Device,
 			strconv.Itoa(SystemMobile),
 			strconv.Itoa(SystemTablet),
 			strconv.Itoa(SystemDesktop),
-			strconv.Itoa(SystemBot),
-			strconv.Itoa(SystemTor),
-			rr.User.System.ProxyType,
-			strconv.Itoa(SystemIsProxy),
-			rr.User.System.UsageType,
-			strconv.Itoa(int(rr.User.System.LastSeen)),
+
+			rr.User.Language.Language,
+			rr.User.Language.Region,
+			rr.User.Language.Tag,
 		})
 	}else{
 		err = w.Write([]string{
-			rr.IP,
-			rr.Isp,
-			rr.Domain,
-			strconv.Itoa(inEU),
-			rr.ContinentCode,
-			rr.CountryCode,
-			rr.CountryName,
-			rr.RegionCode,
-			rr.RegionName,
-			rr.City,
-			rr.ZipCode,
-			rr.TimeZone,
-			strconv.FormatFloat(rr.Latitude, 'f', 4, 64),
-			strconv.FormatFloat(rr.Longitude, 'f', 4, 64),
-			strconv.Itoa(int(rr.MetroCode)),
-			strconv.Itoa(int(rr.PopulationDensity)),
-			strconv.Itoa(int(rr.AccuracyRadius)),
-			strconv.Itoa(int(rr.ASN.AutonomousSystemNumber)),
-			rr.ASN.AutonomousSystemOrganization,
+			rr.Network.IP,
+			strconv.Itoa(int(rr.Network.AS.Number)),
+			rr.Network.AS.Name,
+			rr.Network.Isp,
+			rr.Network.Domain,
+			strings.Join(rr.Network.Tld, "/"),
+			strconv.Itoa(SystemBot),
+			strconv.Itoa(SystemTor),
+			strconv.Itoa(SystemProxy),
+			rr.Network.ProxyType,
+			strconv.Itoa(int(rr.Network.LastSeen)),
+			rr.Network.UsageType,
+
+			rr.Location.RegionCode,
+			rr.Location.RegionName,
+			rr.Location.City,
+			strconv.Itoa(int(rr.Location.MetroCode)),
+			rr.Location.ZipCode,
+			rr.Location.TimeZone,
+			strconv.FormatFloat(rr.Location.Longitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Latitude, 'f', 4, 64),
+			strconv.Itoa(int(rr.Location.AccuracyRadius)),
+
+			rr.Location.Country.Code,
+			rr.Location.Country.CIOC,
+			rr.Location.Country.CCN3,
+			strings.Join(rr.Location.Country.CallCode, "/"),
+			rr.Location.Country.InternationalPrefix,
+			rr.Location.Country.Capital,
+			rr.Location.Country.Name,
+			rr.Location.Country.FullName,
+			strconv.FormatFloat(rr.Location.Country.Area, 'f', 4, 64),
+			strings.Join(rr.Location.Country.Borders, "/"),
+			strconv.FormatFloat(rr.Location.Country.Latitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.Longitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MaxLatitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MaxLongitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MinLatitude, 'f', 4, 64),
+			strconv.FormatFloat(rr.Location.Country.MinLongitude, 'f', 4, 64),
+			strings.Join(currency, "/"),
+			rr.Location.Country.Continent.Code,
+			rr.Location.Country.Continent.Name,
+			rr.Location.Country.Continent.SubRegion,
 		})
 	}
 	if err != nil {
@@ -299,7 +408,7 @@ func roundFloat(val float64, roundOn float64, places int) (newVal float64) {
 	return round / pow
 }
 
-func csvResponse(w http.ResponseWriter, r *http.Request, d *responseRecord) {
+func csvResponse(w http.ResponseWriter, r *http.Request, d *ResponseRecord) {
 	w.Header().Set("Content-Type", "text/csv")
 	if n, err := io.WriteString(w, d.String()); err != nil || n <= 0 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -307,7 +416,7 @@ func csvResponse(w http.ResponseWriter, r *http.Request, d *responseRecord) {
 	}
 }
 
-func xmlResponse(w http.ResponseWriter, r *http.Request, d *responseRecord) {
+func xmlResponse(w http.ResponseWriter, r *http.Request, d *ResponseRecord) {
 	w.Header().Set("Content-Type", "application/xml")
 	x := xml.NewEncoder(w)
 	x.Indent("", "\t")
@@ -321,7 +430,7 @@ func xmlResponse(w http.ResponseWriter, r *http.Request, d *responseRecord) {
 	}
 }
 
-func jsonResponse(w http.ResponseWriter, r *http.Request, d *responseRecord) {
+func jsonResponse(w http.ResponseWriter, r *http.Request, d *ResponseRecord) {
 	if cb := r.FormValue("callback"); cb != "" {
 		w.Header().Set("Content-Type", "application/javascript")
 		if n, err := io.WriteString(w, cb); err != nil || n <= 0 {

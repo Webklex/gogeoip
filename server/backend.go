@@ -15,7 +15,7 @@ import (
 	"../utils/updater"
 )
 
-type writerFunc func(w http.ResponseWriter, r *http.Request, d *responseRecord)
+type writerFunc func(w http.ResponseWriter, r *http.Request, d *ResponseRecord)
 
 // NewHandler creates an http handler for the geoip server that
 // can be embedded in other servers.

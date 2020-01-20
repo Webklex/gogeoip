@@ -244,156 +244,395 @@ for output details.
 
 
 ### Output
-
+#### Network
 | Name                  | Value type    | JSON                      | XML                   | CSV   | Comment   |
 | :-------------------- | :------------ | :------------------------ | :-------------------- | :---- | :-------- |
 | IP address            | string        | ip                        | IP                    | 0     |           |
-| ISP name              | string        | isp                       | Isp                   | 1     |           |
-| Domain                | string        | domain                    | Domain                | 2     |           |
-| Is in europe          | bool          | is_in_european_union      | IsInEuropeanUnion     | 3     |           |
-| Continent code        | string        | continent_code            | ContinentCode         | 4     |           |
-| Country code          | string        | country_code              | CountryCode           | 5     |           |
-| Country name          | string        | country_name              | CountryName           | 6     |           |
-| Region code           | string        | region_code               | RegionCode            | 7     |           |
-| Region name           | string        | region_name               | RegionName            | 8     |           |
-| City name             | string        | city                      | City                  | 9     |           |
-| Zip code              | string        | zip_code                  | ZipCode               | 10    |           |
-| Time zone             | string        | time_zone                 | TimeZone              | 11    |           |
-| Latitude              | float         | latitude                  | Latitude              | 12    |           |
-| Longitude             | float         | longitude                 | Longitude             | 13    |           |
-| Accuracy radius       | integer       | accuracy_radius           | AccuracyRadius        | 14    |           |
-| Metro code            | integer       | metro_code                | MetroCode             | 15    |           |
-| Autonomous system number (ASN) | integer | asn.autonomous_system_number       | ASN.AutonomousSystemNumber        | 16 |  |
-| Autonomous system organization | string  | asn.autonomous_system_organization | ASN.AutonomousSystemOrganization  | 17 |  |
-| Language              | string        | user.language.language    | User.Language.Language | 18   |           |
-| Language region       | string        | user.language.region      | User.Language.Region  | 19    |           |
-| Language tag          | string        | user.language.tag         | User.Language.Tag     | 20    |           |
-| Operating System      | string        | user.system.os            | User.System.OS        | 21    |           |
-| System architecture   | string        | user.system.os_version    | User.System.OSVersion | 22    |           |
-| Browser               | string        | user.system.browser       | User.System.Browser   | 23    |           |
-| Browser Version       | string        | user.system.version       | User.System.Version   | 24    |           |
-| Device name           | string        | user.system.device        | User.System.Device    | 25    |           |
-| Is mobile user        | bool          | user.system.mobile        | User.System.Mobile    | 26    |           |
-| Is tablet user        | bool          | user.system.tablet        | User.System.Tablet    | 27    |           |
-| Is desktop user       | bool          | user.system.desktop       | User.System.Desktop   | 28    |           |
-| Is bot                | bool          | user.system.bot           | User.System.Bot       | 29    |           |
-| Is tor user           | bool          | user.system.tor           | User.System.Tor       | 30    |           |
-| Last seen in days     | integer       | user.system.last_seen     | User.System.LastSeen  | 31    |           |
-| Usage type            | string        | user.system.usage_type    | User.System.UsageType | 32    | [Available usage types](https://lite.ip2location.com/database/px8-ip-proxytype-country-region-city-isp-domain-usagetype-asn-lastseen) |
-| Proxy type            | string        | user.system.proxy_type    | User.System.ProxyType | 33    | [Available proxy types](https://lite.ip2location.com/database/px8-ip-proxytype-country-region-city-isp-domain-usagetype-asn-lastseen) |
-| Proxy                 | bool          | user.system.proxy         | User.System.Proxy     | 34    |           |
+| Number (ASN)          | integer       | as.number                 | AS.Number             | 1     |           |
+| Organization          | string        | as.name                   | AS.Name               | 2     |           |
+| ISP name              | string        | isp                       | Isp                   | 3     |           |
+| Domain                | string        | domain                    | Domain                | 4     |           |
+| TLDs                  | []string      | tld                       | Tld                   | 5     |           |
+| Is bot                | bool          | bot                       | Bot                   | 6     |           |
+| Is tor user           | bool          | tor                       | Tor                   | 7     |           |
+| Is proxy user         | bool          | proxy                     | Proxy                 | 8     |           |
+| Proxy type            | string        | proxy_type                | ProxyType             | 9     | [Available proxy types](https://lite.ip2location.com/database/px8-ip-proxytype-country-region-city-isp-domain-usagetype-asn-lastseen) |
+| Last seen in days     | integer       | last_seen                 | LastSeen              | 10    |           |
+| Usage type            | string        | usage_type                | UsageType             | 11    | [Available usage types](https://lite.ip2location.com/database/px8-ip-proxytype-country-region-city-isp-domain-usagetype-asn-lastseen) |
+
+#### Location
+| Name                  | Value type    | JSON                      | XML                   | CSV   | Comment   |
+| :-------------------- | :------------ | :------------------------ | :-------------------- | :---- | :-------- |
+| Region code           | string        | region_code               | RegionCode            | 12    |           |
+| Region name           | string        | region_name               | RegionName            | 13    |           |
+| City name             | string        | city                      | City                  | 14    |           |
+| Zip code              | string        | zip_code                  | ZipCode               | 15    |           |
+| Time zone             | string        | time_zone                 | TimeZone              | 16    |           |
+| Latitude              | float         | latitude                  | Latitude              | 17    |           |
+| Longitude             | float         | longitude                 | Longitude             | 18    |           |
+| Accuracy radius       | integer       | accuracy_radius           | AccuracyRadius        | 19    |           |
+| Metro code            | integer       | metro_code                | MetroCode             | 20    |           |
+| Country code              | string        | country.code                  | Country.Code                  | 21    |           |
+| CIOC                      | string        | country.cioc                  | Country.CIOC                  | 22    |           |
+| CCN3                      | string        | country.ccn3                  | Country.CCN3                  | 23    |           |
+| Call codes                | []string      | country.call_code             | Country.CallCode              | 24    |           |
+| International call prefix | string        | country.international_prefix  | Country.InternationalPrefix   | 25    |           |
+| Country capital           | string        | country.capital               | Country.Capital               | 26    |           |
+| Country name              | string        | country.name                  | Country.Name                  | 27    |           |
+| Full country name         | string        | country.full_name             | Country.FullName              | 28    |           |
+| Country Area km²          | integer       | country.area                  | Country.Area                  | 29    |           |
+| Country borders           | []string      | country.borders               | Country.Borders               | 30    |           |
+| Latitude                  | float         | country.latitude              | Country.Latitude              | 31    |           |
+| Longitude                 | float         | country.longitude             | Country.Longitude             | 32    |           |
+| Max. Latitude             | float         | country.max_latitude          | Country.MaxLatitude           | 33    |           |
+| Max. Longitude            | float         | country.max_longitude         | Country.MaxLongitude          | 34    |           |
+| Min. Latitude             | float         | country.min_latitude          | Country.MinLatitude           | 35    |           |
+| Min. Longitude            | float         | country.min_longitude         | Country.MinLongitude          | 36    |           |
+| Currencies                | []{code,name} | country.currency              | Country.Currency              | 37    |           |
+| Continent code            | string        | country.content.code          | Country.Continent.Code        | 38    |           |
+| Continent name            | string        | country.content.name          | Country.Continent.Name        | 39    |           |
+| Continent sub region      | string        | country.content.sub_region    | Country.Continent.SubRegion   | 40    |           |
+
+#### System
+| Name                  | Value type    | JSON          | XML       | CSV   | Comment   |
+| :-------------------- | :------------ | :------------ | :-------- | :---- | :-------- |
+| Operating System      | string        | os            | OS        | 41    |           |
+| System architecture   | string        | os_version    | OSVersion | 42    |           |
+| Browser               | string        | browser       | Browser   | 43    |           |
+| Browser Version       | string        | version       | Version   | 44    |           |
+| Device name           | string        | device        | Device    | 45    |           |
+| Is mobile user        | bool          | mobile        | Mobile    | 46    |           |
+| Is tablet user        | bool          | tablet        | Tablet    | 47    |           |
+| Is desktop user       | bool          | desktop       | Desktop   | 48    |           |
+
+#### User
+| Name                  | Value type    | JSON                 | XML               | CSV   | Comment   |
+| :-------------------- | :------------ | :------------------- | :---------------- | :---- | :-------- |
+| Language              | string        | language.language    | Language.Language | 49    |           |
+| Language region       | string        | language.region      | Language.Region   | 50    |           |
+| Language tag          | string        | language.tag         | Language.Tag      | 51    |           |
 
 #### CSV
 ```bash
-curl :8080/csv/
+curl :8080/csv/208.13.138.36
 ```
 ```
-000.000.000.000,,,0,Nordamerika,US,USA,NV,,Las Vegas,89129,America/Los_Angeles,36.2473,-115.2821,839,0,20,209,"CenturyLink Communications, LLC"
+208.13.138.36,209,"CenturyLink Communications, LLC",,,.us,0,0,0,,0,,NV,,Las Vegas,839,89129,America/Los_Angeles,-115.2821,36.2473,20,US,USA,840,1,011,Washington D.C.,United States,United States of America,9372610.0000,CAN/MEX,39.4433,-98.9573,71.4411,-66.8854,17.8315,-179.2311,USD/USN/USS,,
+```
+```bash
+curl :8080/csv/208.13.138.36?user
+```
+```
+208.13.138.36,209,"CenturyLink Communications, LLC",,,.us,0,0,0,,0,,NV,,Las Vegas,839,89129,America/Los_Angeles,-115.2821,36.2473,20,US,USA,840,1,011,Washington D.C.,United States,United States of America,9372610.0000,CAN/MEX,39.4433,-98.9573,71.4411,-66.8854,17.8315,-179.2311,USD/USN/USS,,,Linux,Ubuntu Chromium,79.0.3945.79,x86_64,,0,0,1,en,US,en-US
 ```
 
 #### XML
 ```bash
-curl :8080/xml/
+curl :8080/xml/208.13.138.36
 ```
 ```xml
 <Response>
-    <IP>000.000.000.000</IP>
-    <Isp/>
-    <Domain/>
-    <IsInEuropeanUnion>false</IsInEuropeanUnion>
-    <ContinentCode>Nordamerika</ContinentCode>
-    <CountryCode>US</CountryCode>
-    <CountryName>USA</CountryName>
-    <RegionCode>NV</RegionCode>
-    <RegionName></RegionName>
-    <City>Las Vegas</City>
-    <ZipCode>89129</ZipCode>
-    <TimeZone>America/Los_Angeles</TimeZone>
-    <Latitude>36.2473</Latitude>
-    <Longitude>-115.2821</Longitude>
-    <AccuracyRadius>20</AccuracyRadius>
-    <MetroCode>839</MetroCode>
-    <ASN>
-        <AutonomousSystemNumber>209</AutonomousSystemNumber>
-        <AutonomousSystemOrganization>CenturyLink Communications, LLC</AutonomousSystemOrganization>
-    </ASN>
+    <Network>
+        <IP>208.13.138.36</IP>
+        <AS>
+            <Number>209</Number>
+            <Name>CenturyLink Communications, LLC</Name>
+        </AS>
+        <Isp/>
+        <Domain/>
+        <Tld>.us</Tld>
+        <Bot>false</Bot>
+        <Tor>false</Tor>
+        <Proxy>false</Proxy>
+        <ProxyType/>
+        <LastSeen>0</LastSeen>
+        <UsageType/>
+    </Network>
+    <Location>
+        <RegionCode>NV</RegionCode>
+        <RegionName/>
+        <City>Las Vegas</City>
+        <ZipCode>89129</ZipCode>
+        <TimeZone>America/Los_Angeles</TimeZone>
+        <Longitude>-115.2821</Longitude>
+        <Latitude>36.2473</Latitude>
+        <AccuracyRadius>20</AccuracyRadius>
+        <MetroCode>839</MetroCode>
+        <Country>
+            <Code>US</Code>
+            <CIOC>USA</CIOC>
+            <CCN3>840</CCN3>
+            <CallCode>1</CallCode>
+            <InternationalPrefix>011</InternationalPrefix>
+            <Capital>Washington D.C.</Capital>
+            <Name>United States</Name>
+            <FullName>United States of America</FullName>
+            <Area>9.37261e+06</Area>
+            <Borders>CAN</Borders>
+            <Borders>MEX</Borders>
+            <Latitude>39.443256</Latitude>
+            <Longitude>-98.95734</Longitude>
+            <MaxLatitude>71.441055</MaxLatitude>
+            <MaxLongitude>-66.885414</MaxLongitude>
+            <MinLatitude>17.831509</MinLatitude>
+            <MinLongitude>-179.23108</MinLongitude>
+            <Currency>
+                <Code>USD</Code>
+                <Name/>
+            </Currency>
+            <Currency>
+                <Code>USN</Code>
+                <Name/>
+            </Currency>
+            <Currency>
+                <Code>USS</Code>
+                <Name/>
+            </Currency>
+            <Continent>
+                <Code/>
+                <Name>North America</Name>
+                <SubRegion/>
+            </Continent>
+        </Country>
+    </Location>
+</Response>
+```
+```bash
+curl :8080/xml/208.13.138.36?user
+```
+```xml
+<Response>
+    <Network>
+        <IP>208.13.138.36</IP>
+        <AS>
+            <Number>209</Number>
+            <Name>CenturyLink Communications, LLC</Name>
+        </AS>
+        <Isp/>
+        <Domain/>
+        <Tld>.us</Tld>
+        <Bot>false</Bot>
+        <Tor>false</Tor>
+        <Proxy>false</Proxy>
+        <ProxyType/>
+        <LastSeen>0</LastSeen>
+        <UsageType/>
+    </Network>
+    <Location>
+        <RegionCode>NV</RegionCode>
+        <RegionName/>
+        <City>Las Vegas</City>
+        <ZipCode>89129</ZipCode>
+        <TimeZone>America/Los_Angeles</TimeZone>
+        <Longitude>-115.2821</Longitude>
+        <Latitude>36.2473</Latitude>
+        <AccuracyRadius>20</AccuracyRadius>
+        <MetroCode>839</MetroCode>
+        <Country>
+            <Code>US</Code>
+            <CIOC>USA</CIOC>
+            <CCN3>840</CCN3>
+            <CallCode>1</CallCode>
+            <InternationalPrefix>011</InternationalPrefix>
+            <Capital>Washington D.C.</Capital>
+            <Name>United States</Name>
+            <FullName>United States of America</FullName>
+            <Area>9.37261e+06</Area>
+            <Borders>CAN</Borders>
+            <Borders>MEX</Borders>
+            <Latitude>39.443256</Latitude>
+            <Longitude>-98.95734</Longitude>
+            <MaxLatitude>71.441055</MaxLatitude>
+            <MaxLongitude>-66.885414</MaxLongitude>
+            <MinLatitude>17.831509</MinLatitude>
+            <MinLongitude>-179.23108</MinLongitude>
+            <Currency>
+                <Code>USD</Code>
+                <Name/>
+            </Currency>
+            <Currency>
+                <Code>USN</Code>
+                <Name/>
+            </Currency>
+            <Currency>
+                <Code>USS</Code>
+                <Name/>
+            </Currency>
+            <Continent>
+                <Code/>
+                <Name>North America</Name>
+                <SubRegion/>
+            </Continent>
+        </Country>
+    </Location>
+    <System>
+        <OS>Linux</OS>
+        <Browser>Ubuntu Chromium</Browser>
+        <Version>79.0.3945.79</Version>
+        <OSVersion>x86_64</OSVersion>
+        <Device/>
+        <Mobile>false</Mobile>
+        <Tablet>false</Tablet>
+        <Desktop>true</Desktop>
+    </System>
+    <User>
+        <Language>
+            <Language>en</Language>
+            <Region>US</Region>
+            <Tag>en-US</Tag>
+        </Language>
+    </User>
 </Response>
 ```
 
 #### JSON
 ```bash
-curl :8080/json/
+curl :8080/json/208.13.138.36
 ```
 ```json
 {
-  "ip": "000.000.000.000",
-  "isp": "",
-  "domain": "",
-  "is_in_european_union": false,
-  "continent_code": "Nordamerika",
-  "country_code": "US",
-  "country_name": "USA",
-  "region_code": "NV",
-  "region_name": "",
-  "city": "Las Vegas",
-  "zip_code": "89129",
-  "time_zone": "America/Los_Angeles",
-  "latitude": 36.2473,
-  "longitude": -115.2821,
-  "accuracy_radius": 20,
-  "metro_code": 839,
-  "asn": {
-    "autonomous_system_number": 209,
-    "autonomous_system_organization": "CenturyLink Communications, LLC"
+  "network": {
+    "ip": "208.13.138.36",
+    "as": {
+      "number": 209,
+      "name": "CenturyLink Communications, LLC"
+    },
+    "isp": "",
+    "domain": "",
+    "tld": [".us"],
+    "bot": false,
+    "tor": false,
+    "proxy": false,
+    "proxy_type": "",
+    "last_seen": 0,
+    "usage_type": ""
+  },
+  "location": {
+    "region_code": "NV",
+    "region_name": "",
+    "city": "Las Vegas",
+    "zip_code": "89129",
+    "time_zone": "America/Los_Angeles",
+    "longitude": -115.2821,
+    "latitude": 36.2473,
+    "accuracy_radius": 20,
+    "metro_code": 839,
+    "country": {
+      "code": "US",
+      "cioc": "USA",
+      "ccn3": "840",
+      "call_code": ["1"],
+      "international_prefix": "011",
+      "capital": "Washington D.C.",
+      "name": "United States",
+      "full_name": "United States of America",
+      "area": 9372610,
+      "borders": ["CAN", "MEX"],
+      "latitude": 39.443256,
+      "longitude": -98.95734,
+      "max_latitude": 71.441055,
+      "max_longitude": -66.885414,
+      "min_latitude": 17.831509,
+      "min_longitude": -179.23108,
+      "currency": [{
+          "code": "USD",
+          "name": ""
+       }, {
+          "code": "USN",
+          "name": ""
+       }, {
+          "code": "USS",
+          "name": ""
+      }],
+      "continent": {
+        "code": "",
+        "name": "North America",
+        "sub_region": ""
+      }
+    }
   }
 }
 ```
 ```bash
-curl :8080/json/?user
+curl :8080/json/208.13.138.36?user
 ```
 ```json
 {
-  "ip": "000.000.000.000",
-  "isp": "",
-  "domain": "",
-  "is_in_european_union": false,
-  "continent_code": "Nordamerika",
-  "country_code": "US",
-  "country_name": "USA",
-  "region_code": "NV",
-  "region_name": "",
-  "city": "Las Vegas",
-  "zip_code": "89129",
-  "time_zone": "America/Los_Angeles",
-  "latitude": 36.2473,
-  "longitude": -115.2821,
-  "accuracy_radius": 20,
-  "metro_code": 839,
-  "asn": {
-    "autonomous_system_number": 209,
-    "autonomous_system_organization": "CenturyLink Communications, LLC"
+  "network": {
+    "ip": "208.13.138.36",
+    "as": {
+      "number": 209,
+      "name": "CenturyLink Communications, LLC"
+    },
+    "isp": "",
+    "domain": "",
+    "tld": [".us"],
+    "bot": false,
+    "tor": false,
+    "proxy": false,
+    "proxy_type": "",
+    "last_seen": 0,
+    "usage_type": ""
+  },
+  "location": {
+    "region_code": "NV",
+    "region_name": "",
+    "city": "Las Vegas",
+    "zip_code": "89129",
+    "time_zone": "America/Los_Angeles",
+    "longitude": -115.2821,
+    "latitude": 36.2473,
+    "accuracy_radius": 20,
+    "metro_code": 839,
+    "country": {
+      "code": "US",
+      "cioc": "USA",
+      "ccn3": "840",
+      "call_code": ["1"],
+      "international_prefix": "011",
+      "capital": "Washington D.C.",
+      "name": "United States",
+      "full_name": "United States of America",
+      "area": 9372610,
+      "borders": ["CAN", "MEX"],
+      "latitude": 39.443256,
+      "longitude": -98.95734,
+      "max_latitude": 71.441055,
+      "max_longitude": -66.885414,
+      "min_latitude": 17.831509,
+      "min_longitude": -179.23108,
+      "currency": [{
+          "code": "USD",
+          "name": ""
+       }, {
+          "code": "USN",
+          "name": ""
+       }, {
+          "code": "USS",
+          "name": ""
+      }],
+      "continent": {
+        "code": "",
+        "name": "North America",
+        "sub_region": ""
+      }
+    }
+  },
+  "system": {
+    "os": "Linux",
+    "browser": "Ubuntu Chromium",
+    "version": "79.0.3945.79",
+    "os_version": "x86_64",
+    "device": "",
+    "mobile": false,
+    "tablet": false,
+    "desktop": true
   },
   "user": {
     "language": {
       "language": "en",
       "region": "US",
       "tag": "en-US"
-    },
-    "system": {
-      "os": "Linux",
-      "browser": "Ubuntu Chromium",
-      "version": "79.0.3945.79",
-      "os_version": "x86_64",
-      "device": "",
-      "mobile": false,
-      "tablet": false,
-      "desktop": true,
-      "bot": false,
-      "tor": false,
-      "last_seen": 0,
-      "usage_type": "",
-      "proxy_type": "",
-      "is_proxy": false
     }
   }
 }
@@ -401,30 +640,70 @@ curl :8080/json/?user
 
 #### JSONP
 ```bash
-curl :8080/json/?callback=foobar
+curl :8080/json/208.13.138.36?callback=foobar
 ```
 ```javascript
 foobar({
-  "ip": "000.000.000.000",
-  "isp": "",
-  "domain": "",
-  "is_in_european_union": false,
-  "continent_code": "Nordamerika",
-  "country_code": "US",
-  "country_name": "USA",
-  "region_code": "NV",
-  "region_name": "",
-  "city": "Las Vegas",
-  "zip_code": "89129",
-  "time_zone": "America/Los_Angeles",
-  "latitude": 36.2473,
-  "longitude": -115.2821,
-  "accuracy_radius": 20,
-  "metro_code": 839,
-  "asn": {
-    "autonomous_system_number": 209,
-    "autonomous_system_organization": "CenturyLink Communications, LLC"
-  }
+ "network": {
+   "ip": "208.13.138.36",
+   "as": {
+     "number": 209,
+     "name": "CenturyLink Communications, LLC"
+   },
+   "isp": "",
+   "domain": "",
+   "tld": [".us"],
+   "bot": false,
+   "tor": false,
+   "proxy": false,
+   "proxy_type": "",
+   "last_seen": 0,
+   "usage_type": ""
+ },
+ "location": {
+   "region_code": "NV",
+   "region_name": "",
+   "city": "Las Vegas",
+   "zip_code": "89129",
+   "time_zone": "America/Los_Angeles",
+   "longitude": -115.2821,
+   "latitude": 36.2473,
+   "accuracy_radius": 20,
+   "metro_code": 839,
+   "country": {
+     "code": "US",
+     "cioc": "USA",
+     "ccn3": "840",
+     "call_code": ["1"],
+     "international_prefix": "011",
+     "capital": "Washington D.C.",
+     "name": "United States",
+     "full_name": "United States of America",
+     "area": 9372610,
+     "borders": ["CAN", "MEX"],
+     "latitude": 39.443256,
+     "longitude": -98.95734,
+     "max_latitude": 71.441055,
+     "max_longitude": -66.885414,
+     "min_latitude": 17.831509,
+     "min_longitude": -179.23108,
+     "currency": [{
+         "code": "USD",
+         "name": ""
+      }, {
+         "code": "USN",
+         "name": ""
+      }, {
+         "code": "USS",
+         "name": ""
+     }],
+     "continent": {
+       "code": "",
+       "name": "North America",
+       "sub_region": ""
+     }
+   }
+ }
 });
 ```
 The callback parameter is ignored on all other endpoints.

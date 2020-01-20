@@ -39,37 +39,80 @@ type GeoIpQuery struct {
 	mmdb.TorDefaultQuery
 }
 
-type responseRecord struct {
-	XMLName     		xml.Name	`xml:"Response" json:"-"`
-	IP          		string  	`json:"ip"`
-	Isp 				string		`json:"isp"`
-	Domain 				string		`json:"domain"`
-	IsInEuropeanUnion 	bool  		`json:"is_in_european_union"`
-	ContinentCode 		string  	`json:"continent_code"`
-	CountryCode 		string  	`json:"country_code"`
-	CountryName 		string  	`json:"country_name"`
-	RegionCode  		string  	`json:"region_code"`
-	RegionName  		string  	`json:"region_name"`
-	City        		string  	`json:"city"`
-	ZipCode     		string  	`json:"zip_code"`
-	TimeZone    		string  	`json:"time_zone"`
-	Latitude    		float64 	`json:"latitude"`
-	Longitude   		float64 	`json:"longitude"`
-	PopulationDensity   uint     	`json:"population_density,omitempty"`
-	AccuracyRadius   	uint  		`json:"accuracy_radius"`
-	MetroCode   		uint    	`json:"metro_code"`
-	ASN					*ASNRecord  `json:"asn,omitempty"`
-	User				*UserRecord `json:"user,omitempty"`
+type ResponseRecord struct {
+	XMLName     xml.Name		`xml:"Response" json:"-"`
+	Network		*NetworkRecord  `json:"network"`
+	Location	*LocationRecord `json:"location"`
+	System		*SystemRecord   `json:"system,omitempty"`
+	User		*UserRecord 	`json:"user,omitempty"`
 }
 
-type ASNRecord struct {
-	AutonomousSystemNumber 			uint   `json:"asn"`
-	AutonomousSystemOrganization 	string `json:"aso"`
+type LocationRecord struct {
+	RegionCode  		string  		`json:"region_code"`
+	RegionName  		string  		`json:"region_name"`
+	City        		string  		`json:"city"`
+	ZipCode     		string  		`json:"zip_code"`
+	TimeZone    		string  		`json:"time_zone"`
+	Longitude   		float64 		`json:"longitude"`
+	Latitude    		float64 		`json:"latitude"`
+	AccuracyRadius   	uint  			`json:"accuracy_radius"`
+	MetroCode   		uint    		`json:"metro_code"`
+	Country				*CountryRecord 	`json:"country"`
+}
+
+type CountryRecord struct {
+	Code 			string  			`json:"code"`
+	CIOC 			string  			`json:"cioc"`
+	CCN3 			string  			`json:"ccn3"`
+	CallCode 		[]string  			`json:"call_code"`
+	InternationalPrefix string  		`json:"international_prefix"`
+	Capital 		string  			`json:"capital"`
+	Name 			string  			`json:"name"`
+	FullName 		string  			`json:"full_name"`
+	Area 			float64  			`json:"area"`
+	Borders     	[]string			`json:"borders"`
+	Latitude    	float64 			`json:"latitude"`
+	Longitude   	float64 			`json:"longitude"`
+	MaxLatitude    	float64 			`json:"max_latitude"`
+	MaxLongitude   	float64 			`json:"max_longitude"`
+	MinLatitude    	float64 			`json:"min_latitude"`
+	MinLongitude   	float64 			`json:"min_longitude"`
+	Currency    	[]*CurrencyRecord	`json:"currency"`
+	Continent 		*ContinentRecord  	`json:"continent"`
+}
+
+type CurrencyRecord struct {
+	Code 		string  	`json:"code"`
+	Name 		string  	`json:"name"`
+}
+
+type ContinentRecord struct {
+	Code 		string  	`json:"code"`
+	Name 		string  	`json:"name"`
+	SubRegion 	string  	`json:"sub_region"`
+}
+
+type NetworkRecord struct {
+	IP          string  	`json:"ip"`
+	AS 			*ASRecord   `json:"as"`
+	Isp 		string		`json:"isp"`
+	Domain 		string		`json:"domain"`
+	Tld 		[]string	`json:"tld"`
+	Bot   		bool 		`json:"bot"`
+	Tor   		bool 		`json:"tor"`
+	Proxy 		bool		`json:"proxy"`
+	ProxyType 	string		`json:"proxy_type"`
+	LastSeen 	uint		`json:"last_seen"`
+	UsageType 	string		`json:"usage_type"`
+}
+
+type ASRecord struct {
+	Number 	uint   `json:"number"`
+	Name 	string `json:"name"`
 }
 
 type UserRecord struct {
 	Language	*LanguageRecord  `json:"language"`
-	System		*SystemRecord    `json:"system"`
 }
 
 type LanguageRecord struct {
@@ -87,12 +130,6 @@ type SystemRecord struct {
 	Mobile   	bool 	`json:"mobile"`
 	Tablet   	bool 	`json:"tablet"`
 	Desktop   	bool 	`json:"desktop"`
-	Bot   		bool 	`json:"bot"`
-	Tor   		bool 	`json:"tor"`
-	LastSeen 	uint	`json:"last_seen"`
-	UsageType 	string	`json:"usage_type"`
-	ProxyType 	string	`json:"proxy_type"`
-	Proxy 		bool	`json:"proxy"`
 }
 
 type ApiHandler struct {
