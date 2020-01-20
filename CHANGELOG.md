@@ -11,6 +11,10 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 ### Added
 - NaN
 
+## [1.2.0] - 2020-01-20
+- Country information extended
+- Output structure reworked
+
 ## [1.1.0] - 2020-01-19
 - ip2location db added
 - Get ISP information
