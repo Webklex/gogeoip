@@ -11,6 +11,13 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 ### Added
 - NaN
 
+## [1.2.1] - 2020-01-21
+### Fixed
+- Rate limit interval option gets no longer ignored
+
+### Added
+- Setup wizard added
+
 ## [1.2.0] - 2020-01-20
 - Country information extended
 - Output structure reworked
