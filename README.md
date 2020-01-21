@@ -164,6 +164,7 @@ geoip -setup
 | CLI                    | Config               | Type   | Default              | Description                                                 |
 | :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
 | -logtostdout           | LOGTOSTDOUT          | bool   | false                | Log to stdout instead of stderr                             |
+| -log-file              | LOG_FILE             | string |                      | Log file location                             |
 | -logtimestamp          | LOGTIMESTAMP         | bool   | true                 | Prefix non-access logs with timestamp                       |
 
 #### Memcache

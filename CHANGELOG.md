@@ -9,7 +9,7 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 - NaN
 
 ### Added
-- NaN
+- Logging options extended
 
 ## [1.2.1] - 2020-01-21
 ### Fixed

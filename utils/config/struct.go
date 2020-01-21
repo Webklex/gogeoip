@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"time"
 )
 
@@ -33,8 +34,9 @@ type Config struct {
 	WriteTimeout        time.Duration `json:"WRITE_TIMEOUT"`
 	UseXForwardedFor    bool          `json:"USE_X_FORWARDED_FOR"`
 	Silent              bool          `json:"SILENT"`
-	LogToStdout         bool          `json:"LOGTOSTDOUT"`
-	LogTimestamp        bool          `json:"LOGTIMESTAMP"`
+	LogToStdout         bool          `json:"LOG_STDOUT"`
+	LogOutputFile       string        `json:"LOG_FILE"`
+	LogTimestamp        bool          `json:"LOG_TIMESTAMP"`
 	RedisAddr           string        `json:"REDIS"`
 	RedisTimeout        time.Duration `json:"REDIS_TIMEOUT"`
 	MemcacheAddr        string        `json:"MEMCACHE"`
@@ -70,4 +72,6 @@ type Config struct {
 	RootDir     		string 		  `json:"-"`
 	SaveConfigFlag     	bool 		  `json:"-"`
 	RunSetupFlag     	bool 		  `json:"-"`
+
+	LogOutput        	*os.File 	  `json:"-"`
 }

@@ -5,8 +5,11 @@ import (
 	"../utils/i2ldb"
 	"../utils/mmdb"
 	"../utils/tor"
+	"../utils/updater"
 	"encoding/xml"
 	"github.com/rs/cors"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -165,6 +168,20 @@ func NewServerConfig(c *config.Config) *Server {
 		},
 	}
 
+	c.LogOutput = os.Stdout
+
+	if c.LogToStdout {
+		log.SetOutput(c.LogOutput)
+	}else if c.LogOutputFile != "" {
+		_, _ = updater.MakeDir(c.LogOutputFile)
+		_ = ioutil.WriteFile(c.LogOutputFile, []byte(""), 0644)
+		c.LogOutput, _ = os.OpenFile(c.LogOutputFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		log.SetOutput(c.LogOutput)
+	}
+	if !c.LogTimestamp {
+		log.SetFlags(0)
+	}
+
 	return conf
 }
 
@@ -175,13 +192,6 @@ func (s *Server) Start() {
 	go s.watchEvents(s.Api.i2lDB.Updater)
 
 	_ = s.openDB()
-
-	if s.Config.LogToStdout {
-		log.SetOutput(os.Stdout)
-	}
-	if !s.Config.LogTimestamp {
-		log.SetFlags(0)
-	}
 	f, err := s.NewHandler()
 	if err != nil {
 		log.Fatal(err)

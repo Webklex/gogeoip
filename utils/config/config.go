@@ -119,6 +119,7 @@ func (c *Config) AddFlags(fs *flag.FlagSet) {
 
 	fs.DurationVar(&c.WriteTimeout, 	"write-timeout", 		c.WriteTimeout, 	"Write timeout for HTTP and HTTPS client connections")
 	fs.BoolVar(&c.LogToStdout, 			"logtostdout", 		c.LogToStdout, 		"Log to stdout instead of stderr")
+	fs.StringVar(&c.LogOutputFile, 			"log-file", 		c.LogOutputFile, 		"Log output file")
 	fs.BoolVar(&c.LogTimestamp, 		"logtimestamp", 		c.LogTimestamp, 	"Prefix non-access logs with timestamp")
 	fs.StringVar(&c.MemcacheAddr, 		"memcache", 			c.MemcacheAddr, 	"Memcache address in form of host:port[,host:port] for quota")
 	fs.DurationVar(&c.MemcacheTimeout, 	"memcache-timeout", 	c.MemcacheTimeout, 	"Memcache read/write timeout")
@@ -150,7 +151,7 @@ func NewConfigFromFile(configFile string) *Config {
 	return config
 }
 
-func createDirectory(dirName string) bool {
+func CreateDirectory(dirName string) bool {
 	src, err := os.Stat(dirName)
 
 	if os.IsNotExist(err) {
@@ -169,7 +170,7 @@ func createDirectory(dirName string) bool {
 }
 
 func (c *Config) initFile(filename string) {
-	createDirectory("conf")
+	CreateDirectory("conf")
 	if len(filename) == 0{
 		dir, _ := os.Getwd()
 		filename = path.Join(dir, "conf", "settings.config")
@@ -238,10 +239,7 @@ func (c *Config) Save() (bool, error) {
 }
 
 func (c *Config) logWriter() io.Writer {
-	if c.LogToStdout {
-		return os.Stdout
-	}
-	return os.Stderr
+	return c.LogOutput
 }
 
 func (c *Config) ErrorLogger() *log.Logger {
