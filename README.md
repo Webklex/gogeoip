@@ -1,7 +1,12 @@
 # GeoIP Web API
-[![Software License][ico-license]](LICENSE.md)
-
 GoGeoIP - a lightweight geoip api written in GO. [Live Demo](https://www.gogeoip.com/)
+
+[![Releases][ico-release]](https://github.com/Webklex/gogeoip/releases)
+[![Downloads][ico-downloads]](https://github.com/Webklex/gogeoip/releases)
+[![Demo][ico-website-status]](https://www.gogeoip.com/)
+[![License][ico-license]](LICENSE.md)
+
+
 
 ![geo_ip_web_gui](https://raw.githubusercontent.com/webklex/gogeoip-gui/master/geo_ip_web_gui.jpg)
 
@@ -750,6 +755,9 @@ If you discover any security related issues, please email github@webklex.com ins
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
 
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
+[ico-release]: https://img.shields.io/github/v/release/webklex/gogeoip?style=flat-square
+[ico-downloads]: https://img.shields.io/github/downloads/webklex/gogeoip/total?style=flat-square
+[ico-website-status]: https://img.shields.io/website?down_message=Offline&label=Demo&style=flat-square&up_message=Online&url=https%3A%2F%2Fwww.gogeoip.com%2F
 
 [link-author]: https://github.com/webklex
 [link-contributors]: https://github.com/webklex/gogeoip/graphs/contributors
