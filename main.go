@@ -2,6 +2,7 @@ package main
 
 import (
 	"./server"
+	"./setup"
 	"./utils/config"
 	"flag"
 	"fmt"
@@ -30,7 +31,9 @@ func main() {
 		return
 	}
 
-	if c.SaveConfigFlag {
+	if c.RunSetupFlag {
+		setup.RunSetup(c)
+	} else if c.SaveConfigFlag {
 		if _, err := c.Save(); err != nil {
 			print(err)
 		}

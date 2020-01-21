@@ -135,6 +135,7 @@ func (c *Config) AddFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.Silent, 			"silent", c.Silent, 			"Disable HTTP and HTTPS log request details")
 	fs.StringVar(&c.File, 			"config", c.File, 			"Config file")
 	fs.BoolVar(&c.SaveConfigFlag, 	"save", 	c.SaveConfigFlag, 	"Save config")
+	fs.BoolVar(&c.RunSetupFlag, 	"setup", 	c.RunSetupFlag, 	"Run the setup wizard")
 }
 
 

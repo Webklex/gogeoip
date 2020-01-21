@@ -48,6 +48,7 @@ GoGeoIP - a lightweight geoip api written in GO. [Live Demo](https://www.gogeoip
 * Multiple languages are supported (en, ru, es, jp, fr, de)
 * Detect VPN anonymizer, open proxies, web proxies, Tor exits, data center, web hosting (DCH) range and search engine robots (SES).
 * Supports Linux, OS X, FreeBSD, and Windows
+* Setup wizard
 
 ### Requirements
 A Free MaxMind and / or ip2location License will be required and can be easily obtained:
@@ -84,7 +85,10 @@ To see all the available options, use the `-help` option:
 ```bash
 geoip -help
 ```
-You can configure the web server via command line flags or the config file `conf/settings.config`.
+You can configure the web server via command line flags or the config file `conf/settings.config`. or by using the `-setup` option:
+```bash
+geoip -setup
+```
 
 #### HTTP & HTTPS
 | CLI                    | Config               | Type   | Default              | Description                                                 |
@@ -177,6 +181,7 @@ You can configure the web server via command line flags or the config file `conf
 | -save                  |                      | bool   | false                | Save config                                                 |
 | -version               |                      | bool   | false                | Show version and exit                                       |
 | -help                  |                      | bool   | false                | Show help and exit                                          |
+| -setup                 |                      | bool   | false                | Run the setup wizard                                        |
 
 If you're using LetsEncrypt.org to provision your TLS certificates, you have to listen for HTTPS on port 443. Following is an example of the server listening on 2 different ports: http (80) and https (443):
 ```bash

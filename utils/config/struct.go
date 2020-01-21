@@ -69,4 +69,5 @@ type Config struct {
 	File     			string 		  `json:"-"`
 	RootDir     		string 		  `json:"-"`
 	SaveConfigFlag     	bool 		  `json:"-"`
+	RunSetupFlag     	bool 		  `json:"-"`
 }
