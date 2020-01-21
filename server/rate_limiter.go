@@ -17,14 +17,16 @@ type Visitor struct {
 type RateLimit struct {
 	Limit rate.Limit
 	Burst int
+	Interval   time.Duration
 	Mutex  *sync.RWMutex
 	Visitors map[string]*Visitor
 }
 
-func NewRateLimit(limit rate.Limit, burst int) *RateLimit {
+func NewRateLimit(limit int, burst int, interval time.Duration) *RateLimit {
 	conf := &RateLimit{
-		Limit: limit,
-		Burst:burst,
+		Limit: rate.Limit(limit),
+		Burst: burst,
+		Interval: interval,
 		Visitors:  make(map[string]*Visitor),
 		Mutex: &sync.RWMutex{},
 	}
@@ -68,7 +70,7 @@ func (i *RateLimit) cleanupVisitors() {
 
 		i.Mutex.Lock()
 		for ip, v := range i.Visitors {
-			if time.Now().Sub(v.lastSeen) > 3*time.Minute {
+			if time.Now().Sub(v.lastSeen) > i.Interval {
 				delete(i.Visitors, ip)
 			}
 		}

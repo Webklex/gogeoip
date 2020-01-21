@@ -7,7 +7,6 @@ import (
 	"../utils/tor"
 	"encoding/xml"
 	"github.com/rs/cors"
-	"golang.org/x/time/rate"
 	"log"
 	"os"
 	"strconv"
@@ -156,7 +155,7 @@ func NewServerConfig(c *config.Config) *Server {
 		Host: host,
 		Port: port,
 
-		RateLimit: NewRateLimit(rate.Limit(c.RateLimitLimit), c.RateLimitBurst),
+		RateLimit: NewRateLimit(c.RateLimitLimit, c.RateLimitBurst, c.RateLimitInterval),
 
 		Api: &ApiHandler{
 			db:    mmdb.NewDefaultConfig(c, c.MMProductID),

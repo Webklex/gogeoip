@@ -65,7 +65,7 @@ func DefaultConfig() *Config {
 		MemcacheAddr:        "localhost:11211",
 		MemcacheTimeout:     time.Second,
 		RateLimitBackend:    "redis",
-		RateLimitInterval:   time.Hour,
+		RateLimitInterval:   3 * time.Minute,
 
 		RootDir: dir,
 		File: path.Join(dir, "conf", "settings.config"),
@@ -126,7 +126,7 @@ func (c *Config) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&c.RateLimitBackend, 		"quota-backend", 	c.RateLimitBackend, 	"Backend for rate limiter: map, redis, or memcache")
 	fs.IntVar(&c.RateLimitBurst, 			"quota-burst", 	c.RateLimitBurst, 		"Max requests per source IP per request burst")
 	fs.DurationVar(&c.RateLimitInterval, 	"quota-interval", c.RateLimitInterval, 	"Quota expiration interval, per source IP querying the API")
-	fs.Uint64Var(&c.RateLimitLimit, 		"quota-max", 		c.RateLimitLimit, 		"Max requests per source IP per interval; set 0 to turn quotas off")
+	fs.IntVar(&c.RateLimitLimit, 		   "quota-max", 		c.RateLimitLimit, 		"Max requests per source IP per interval; set 0 to turn quotas off")
 
 	fs.DurationVar(&c.ReadTimeout, 	"read-timeout",	c.ReadTimeout, 	"Read timeout for HTTP and HTTPS client connections")
 	fs.StringVar(&c.RedisAddr, 		"redis", 			c.RedisAddr, 	"Redis address in form of host:port[,host:port] for quota")

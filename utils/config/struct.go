@@ -42,7 +42,7 @@ type Config struct {
 
 	RateLimitBackend    string        `json:"QUOTA_BACKEND"`
 	RateLimitInterval   time.Duration `json:"QUOTA_INTERVAL"`
-	RateLimitLimit      uint64        `json:"QUOTA_MAX"`
+	RateLimitLimit      int           `json:"QUOTA_MAX"`
 	RateLimitBurst      int           `json:"QUOTA_BURST"`
 
 	MMUserID            string        `json:"MM_USER_ID"`
