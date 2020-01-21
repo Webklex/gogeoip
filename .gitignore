@@ -11,3 +11,4 @@
 /build
 /gui*
 *.mmdb
+/log
