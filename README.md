@@ -1,5 +1,8 @@
-# GeoIP Web API
-GoGeoIP - a lightweight geoip api written in GO. [Live Demo](https://www.gogeoip.com/)
+# GoGeoIP Web API
+GoGeoIP - a lightweight web api providing ip intelligence written in GO. This software provides an api to get as many 
+information as possible for a given IP address or the current visitor. This includes network, system, location and 
+user information. 
+A [Live Demo](https://www.gogeoip.com/) is available under [gogeoip.com](https://www.gogeoip.com/).
 
 [![Releases][ico-release]](https://github.com/Webklex/gogeoip/releases)
 [![Downloads][ico-downloads]](https://github.com/Webklex/gogeoip/releases)
@@ -50,6 +53,8 @@ GoGeoIP - a lightweight geoip api written in GO. [Live Demo](https://www.gogeoip
 * Integrated rate limit (quota) for your clients (per client IP) based on requests per time interval; several backends such as in-memory map (for single instance), or redis or memcache for distributed deployments are supported
 * Serve the default [GeoLite2 City](https://dev.maxmind.com/geoip/geoip2/geolite2/) free database that is downloaded and updated automatically in background on a configurable schedule, or
 * Serve the commercial [GeoIP2 City](https://www.maxmind.com/en/geoip2-city) database from MaxMind, either as a local file that you provide and update periodically (so the server can reload it), or configured to be downloaded periodically using your API key
+* Serve the default [PX8LITEBIN](https://lite.ip2location.com/database) free database that is downloaded and updated automatically in background on a configurable schedule, or
+* Serve the commercial [PX8BIN](https://lite.ip2location.com/database) database from ip2location, either as a local file that you provide and update periodically (so the server can reload it), or configured to be downloaded periodically using your API token
 * Multiple languages are supported (en, ru, es, jp, fr, de)
 * Detect VPN anonymizer, open proxies, web proxies, Tor exits, data center, web hosting (DCH) range and search engine robots (SES).
 * Supports Linux, OS X, FreeBSD, and Windows
@@ -90,7 +95,7 @@ To see all the available options, use the `-help` option:
 ```bash
 geoip -help
 ```
-You can configure the web server via command line flags or the config file `conf/settings.config`. or by using the `-setup` option:
+You can configure the web server via command line flags, the config file `conf/settings.config` or by using the `-setup` flag:
 ```bash
 geoip -setup
 ```
@@ -184,10 +189,10 @@ geoip -setup
 | :--------------------- | :------------------- | :----- | :------------------- | :---------------------------------------------------------- |
 | -silent                | SILENT               | bool   | false                | Disable HTTP and HTTPS log request details                  |
 | -config                |                      | string | conf/settings.config | Config file path                                            |
+| -setup                 |                      | bool   | false                | Run the setup wizard                                        |
 | -save                  |                      | bool   | false                | Save config                                                 |
 | -version               |                      | bool   | false                | Show version and exit                                       |
 | -help                  |                      | bool   | false                | Show help and exit                                          |
-| -setup                 |                      | bool   | false                | Run the setup wizard                                        |
 
 If you're using LetsEncrypt.org to provision your TLS certificates, you have to listen for HTTPS on port 443. Following is an example of the server listening on 2 different ports: http (80) and https (443):
 ```bash
