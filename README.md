@@ -765,7 +765,7 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 [ico-release]: https://img.shields.io/github/v/release/webklex/gogeoip?style=flat-square
 [ico-downloads]: https://img.shields.io/github/downloads/webklex/gogeoip/total?style=flat-square
 [ico-website-status]: https://img.shields.io/website?down_message=Offline&label=Demo&style=flat-square&up_message=Online&url=https%3A%2F%2Fwww.gogeoip.com%2F
-[ico-hits]: https://hits.webklex.com/svg/webklex/gogeoip?
+[ico-hits]: https://hits.webklex.com/svg/webklex/gogeoip?1
 
 [link-hits]: https://hits.webklex.com
 [link-author]: https://github.com/webklex
