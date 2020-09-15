@@ -33,8 +33,6 @@ type ProxyDefaultQuery struct {
 func NewDefaultConfig(c *config.Config) *Config {
 	conf := &Config{
 		Config: c,
-		// Token: "cIbuX85Ld5DzmN1x1Z2xAvygTItoY5uwo4QMGPREelsIlUaUXzrCHHu8DTne4nAe",
-		// ProductID: "PX8LITEBIN",
 	}
 	dbFile := filepath.Join(c.RootDir, "cache", c.I2LProductID + ".bin")
 	dbArchive := filepath.Join(c.RootDir, "cache", c.I2LProductID + ".zip")

@@ -8,7 +8,6 @@ import (
 	"../utils/updater"
 	"encoding/xml"
 	"github.com/rs/cors"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"

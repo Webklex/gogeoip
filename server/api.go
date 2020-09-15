@@ -157,13 +157,13 @@ func (q *GeoIpQuery) Record(ip net.IP, lang string, request *http.Request) *Resp
 		},
 		Network:  &NetworkRecord{
 			AS:        &ASRecord{
-				Number: q.AutonomousSystemNumber,
-				Name: 	q.AutonomousSystemOrganization,
+				Number: q.ASNDefaultQuery.AutonomousSystemNumber,
+				Name: 	q.ASNDefaultQuery.AutonomousSystemOrganization,
 			},
 			IP:         ip.String(),
-			Isp:	    q.Isp,
+			Isp:	    q.Traits.ISP,
 			Tld:	    country.TLDs,
-			Domain:	    q.Domain,
+			Domain:	    q.Traits.Domain,
 			Tor: 		q.IsTorUser,
 			ProxyType: 	q.ProxyType,
 			Proxy: 		q.Proxy,

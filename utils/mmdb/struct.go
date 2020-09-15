@@ -22,6 +22,7 @@ type DB struct {
 // https://dev.maxmind.com/geoip/geoip2/geoip2-city-country-csv-databases/
 type DefaultQuery struct {
 	Continent struct {
+		Code string `maxminddb:"code"`
 		Names map[string]string `maxminddb:"names"`
 	} `maxminddb:"continent"`
 	Country struct {
