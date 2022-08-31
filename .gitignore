@@ -2,13 +2,15 @@
 *.swp
 *.csv
 *.zip
-/.idea
+*.mmdb
 *.tar.gz
 *.sqlite
+/.idea
 /vendor/*/
 /conf
 /cache
 /build
 /gui*
-*.mmdb
 /log
+/config
+/node_modules/
