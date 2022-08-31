@@ -1,0 +1,19 @@
+{
+  "name": "gogeoip",
+  "version": "2.0.0",
+  "description": "",
+  "dependencies": {
+    "autoprefixer": "^10.4.8",
+    "postcss": "^8.4.16",
+    "postcss-cli": "^10.0.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.1.8"
+  },
+  "scripts": {
+    "build": "tailwindcss build tailwind.css -o static/css/tailwind.css",
+    "watch": "tailwindcss build tailwind.css -o static/css/tailwind.css -w"
+  },
+  "author": "",
+  "license": "MIT"
+}
