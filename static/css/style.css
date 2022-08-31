@@ -1,0 +1,10 @@
+
+.relative {
+    z-index: 2;
+}
+
+.statistic-counter {
+    font-family: monospace, Monospaced, FreeMono;
+    width: 5rem;
+    height: 5rem;
+}

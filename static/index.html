@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A web api providing ip intelligence written in GO. This software provides an api to get as much information as possible for a given IP address or the current visitor. This includes network, system, location and user information.">
+    <title>GoGeoIP</title>
+
+    <link rel="icon" href="/image/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/image/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/image/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/image/favicon-16x16.png">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" href="/css/open_streetmap.css" rel="stylesheet">
+    <link type="text/css" href="/css/tailwind.css" rel="stylesheet">
+    <link type="text/css" href="/css/style.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 text-slate-200">
+<div class="absolute w-full" style="overflow: hidden; max-width: 100vw; height: 100vh; z-index: 1; top: 0; right: 0">
+    <div class="absolute right-0 bg-sky-500 shadow-lg border-4 border-sky-300"
+         style="height: 150vh; width: 300vw; z-index: 1; right: -25vw; top: -50vh; transform: rotateY(0deg) rotate(-22.5deg);"></div>
+</div>
+
+<div class="relative flex flex-wrap w-full">
+    <div class="w-full flex justify-center">
+        <div class="container py-4 px-4 md:px-0 flex">
+            <div class="grow">
+                <span class="text-4xl font-bold text-slate-800">
+                    Go<span class="text-green-300">Geo</span>IP
+                </span>
+            </div>
+            <div class="w-auto pt-2">
+                <a href="https://github.com/Webklex/gogeoip" class="py-3 px-4 bg-slate-900 text-sky-300 rounded border-2 border-slate-800 shadow">
+                    Fork on GitHub
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="w-full flex justify-center relative z-index-2">
+        <div class="container">
+            <div class="flex flex-wrap w-full bg-slate-800 pb-4 pt-6 px-4 md:rounded-lg">
+                <div class="flex flex-wrap w-full text-center">
+                    <div id="statistic-ips" class="w-3/12 justify-center flex">
+                        <div class="bg-slate-900 p-4 border-2 border-sky-600 rounded-full shadow statistic-counter">
+                            <div class="w-full text-xs text-slate-400">IPs</div>
+                            <span class="value text-sm">0</span>
+                        </div>
+                    </div>
+                    <div id="statistic-asns" class="w-3/12 justify-center flex">
+                        <div class="bg-slate-900 p-4 border-2 border-sky-600 rounded-full shadow statistic-counter">
+                            <div class="w-full text-xs text-slate-400">ASNs</div>
+                            <span class="value text-sm">0</span>
+                        </div>
+                    </div>
+                    <div id="statistic-isps" class="w-3/12 justify-center flex">
+                        <div class="bg-slate-900 p-4 border-2 border-sky-600 rounded-full shadow statistic-counter">
+                            <div class="w-full text-xs text-slate-400">ISPs</div>
+                            <span class="value text-sm">0</span>
+                        </div>
+                    </div>
+                    <div id="statistic-cities" class="w-3/12 justify-center flex">
+                        <div class="bg-slate-900 p-4 border-2 border-sky-600 rounded-full shadow statistic-counter">
+                            <div class="w-full text-xs text-slate-400">Cities</div>
+                            <span class="value text-sm">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full" id="error-holder"></div>
+
+                <div class="w-full mt-4" id="search-holder">
+                    <form class="flex flex-wrap w-full hidden" id="search_form">
+                        <div class="w-full md:w-4/12 pt-2">
+                            <label for="input_ip_ip" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">IP Address</label>
+                            <input type="text"
+                                   id="input_ip_ip"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="IP"/>
+
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 md:pl-2 pt-2">
+                            <label for="input_proxy_type" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Proxy Type
+                            </label>
+                            <select id="input_proxy_type"
+                                    class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 ">
+                                <option value="">Any</option>
+                                <option value="VPN">Anonymizing VPN services</option>
+                                <option value="TOR">Tor Exit Nodes</option>
+                                <option value="DCH">Hosting Provider, Data Center or CDN</option>
+                                <option value="PUB">Public Proxies</option>
+                                <option value="WEB">Web Proxies</option>
+                                <option value="SES">Search Engine Robots</option>
+                                <option value="RES">Residential Proxies</option>
+                            </select>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 pl-2 pt-2">
+                            <label for="input_type" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Type
+                            </label>
+                            <select id="input_type"
+                                    class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 ">
+                                <option value="">Any</option>
+                                <option value="COM">Commercial</option>
+                                <option value="ORG">Organization</option>
+                                <option value="GOV">Government</option>
+                                <option value="MIL">Military</option>
+                                <option value="EDU">University/College/School</option>
+                                <option value="LIB">Library</option>
+                                <option value="CDN">Content Delivery Network</option>
+                                <option value="CPN">Content Privacy Network</option>
+                                <option value="ISP">Fixed Line ISP</option>
+                                <option value="MOB">Mobile ISP</option>
+                                <option value="DCH">Data Center/Web Hosting/Transit</option>
+                                <option value="SES">Search Engine Spider</option>
+                                <option value="RSV">Reserved</option>
+                                <option value="TRA">Traveler</option>
+                                <option value="RTR">Router</option>
+                                <option value="SES">Search engine spider</option>
+                                <option value="MOB">Cellular</option>
+                                <option value="CAF">Cafe / Restaurant</option>
+                                <option value="RDL">Residential</option>
+                                <option value="CPN">Consumer Privacy Network</option>
+                            </select>
+                        </div>
+
+                        <div class="w-6/12 md:w-4/12 lg:w-1/12 md:pl-0 lg:pl-2 pt-2">
+                            <label for="input_score" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">Score</label>
+                            <input type="text"
+                                   id="input_score"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Score"/>
+
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-1/12 pl-2 pt-2">
+                            <label for="input_threat" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">Threat</label>
+                            <input type="text"
+                                   id="input_threat"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Threat"/>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 md:pl-2 pt-2">
+                            <label for="input_user_count" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">User count</label>
+                            <input type="text"
+                                   id="input_user_count"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="User count"/>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-1/12 pl-2 md:pl-0 pt-2">
+                            <label for="input_last_seen" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">Last seen</label>
+                            <input type="number"
+                                   min="0"
+                                   max="30"
+                                   id="input_last_seen"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Last seen"/>
+                        </div>
+
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 flex items-center pl-0 md:pl-4 pt-8">
+                            <input id="input_is_anonymous" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_is_anonymous" class="ml-2 text-sm text-slate-200">Is Anonymous</label>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 flex items-center pl-0 pt-8">
+                            <input id="input_is_anonymous_proxy" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_is_anonymous_proxy" class="ml-2 text-sm text-slate-200">Is Anonymous
+                                Proxy</label>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 flex items-center pl-0 pt-8">
+                            <input id="input_is_public_proxy" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_is_public_proxy" class="ml-2 text-sm text-slate-200">Is Public Proxy</label>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-1/12 flex items-center pl-0 md:pl-4 pt-8">
+                            <input id="input_is_anonymous_vpn" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_is_anonymous_vpn" class="ml-2 text-sm text-slate-200">Is VPN</label>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 flex items-center pl-0 md:pl-2 pt-8">
+                            <input id="input_is_hosting_provider" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_is_hosting_provider" class="ml-2 text-sm text-slate-200">Is Hosting
+                                Provider</label>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 flex items-center pl-0 pt-8">
+                            <input id="input_is_satellite_provider" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_is_satellite_provider" class="ml-2 text-sm text-slate-200">Is Satellite
+                                Provider</label>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 lg:w-2/12 flex items-center pl-0 lg:pl-0 md:pl-4 pt-8">
+                            <input id="input_is_tor_exit_node" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_is_tor_exit_node" class="ml-2 text-sm text-slate-200">Is Tor Exit Node</label>
+                        </div>
+
+
+                        <div class="w-full md:w-4/12 xl:w-2/12 pt-4 md:pl-2 md:pt-2">
+                            <label for="input_isp_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                ISP Name
+                            </label>
+                            <input type="text"
+                                   id="input_isp_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="ISP Name"/>
+                        </div>
+
+                        <div class="w-6/12 md:w-4/12 md:pl-2 pt-2">
+                            <label for="input_network_network" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Network Interface
+                            </label>
+                            <input type="text"
+                                   id="input_network_network"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Network Interface"/>
+                        </div>
+                        <div class="w-6/12 md:w-4/12 pl-2 md:pl-0 xl:pl-2 pt-2">
+                            <label for="input_network_domain" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Network Domain
+                            </label>
+                            <input type="text"
+                                   id="input_network_domain"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Network Domain"/>
+                        </div>
+
+                        <div class="w-full md:w-4/12 xl:w-3/12 md:pl-2 xl:pl-0 pt-2">
+                            <label for="input_organization_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Organization Name
+                            </label>
+                            <input type="text"
+                                   id="input_organization_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Organization Name"/>
+                        </div>
+
+                        <div class="w-full md:w-4/12 md:pl-2 pt-2">
+                            <label for="input_domain_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Domain Name
+                            </label>
+                            <input type="text"
+                                   id="input_domain_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Domain Name"/>
+                        </div>
+
+                        <div class="w-6/12 md:w-4/12 xl:w-3/12 xl:pl-2 pt-2">
+                            <label for="input_autonomous_system_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                AS Name
+                            </label>
+                            <input type="text"
+                                   id="input_autonomous_system_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="AS Name"/>
+                        </div>
+                        <div class="w-6/12 md:w-4/12  xl:w-2/12 pl-2 pt-2">
+                            <label for="input_autonomous_system_number" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                AS Number
+                            </label>
+                            <input type="number"
+                                   min="0"
+                                   id="input_autonomous_system_number"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="AS Number"/>
+                        </div>
+
+                        <div class="w-full text-left pt-8 pb-2"></div>
+                        <div class="w-4/12 md:w-2/12 xl:w-1/12 pt-2">
+                            <label for="input_continent_code" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Continent Code
+                            </label>
+                            <input type="text"
+                                   id="input_continent_code"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Continent Code"/>
+                        </div>
+                        <div class="w-8/12 md:w-4/12 pl-2 pt-2">
+                            <label for="input_continent_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Continent Name
+                            </label>
+                            <input type="text"
+                                   id="input_continent_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Continent Name"/>
+                        </div>
+
+                        <div class="w-4/12 md:w-2/12 xl:w-1/12 md:pl-2 pt-2">
+                            <label for="input_country_code" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Country Code
+                            </label>
+                            <input type="text"
+                                   id="input_country_code"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Country Code"/>
+                        </div>
+                        <div class="w-8/12 md:w-4/12 pl-2 pt-2">
+                            <label for="input_country_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Country Name
+                            </label>
+                            <input type="text"
+                                   id="input_country_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Country Name"/>
+                        </div>
+                        <div class="md:w-4/12 xl:w-2/12 xl:pl-2 flex items-center pt-6">
+                            <input id="input_country_european_member" type="checkbox" value=""
+                                   class="w-4 h-4 text-sky-600 bg-slate-800 rounded border-sky-300 focus:ring-sky-500 focus:ring-2">
+                            <label for="input_country_european_member" class="ml-2 text-sm text-slate-200">Is European Member</label>
+                        </div>
+
+                        <div class="w-full md:w-4/12 xl:pl-0 pt-2">
+                            <label for="input_city_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                City Name
+                            </label>
+                            <input type="text"
+                                   id="input_city_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="City Name"/>
+                        </div>
+                        <div class="w-6/12 md:w-2/12 md:pl-2 pt-2">
+                            <label for="input_city_time_zone" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                City Timezone
+                            </label>
+                            <input type="text"
+                                   id="input_city_time_zone"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="City Timezone"/>
+                        </div>
+                        <div class="w-6/12 md:w-2/12 pl-2 pt-2">
+                            <label for="input_city_metro_code" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                City MetroCode
+                            </label>
+                            <input type="number"
+                                   min="0"
+                                   id="input_city_metro_code"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="City Timezone"/>
+                        </div>
+                        <div class="w-6/12 md:w-2/12 xl:pl-2 pt-2">
+                            <label for="input_city_population_density" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Population
+                            </label>
+                            <input type="number"
+                                   min="0"
+                                   id="input_city_population_density"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="City Population Density"/>
+                        </div>
+
+                        <div class="w-full md:w-2/12 md:pl-2 pt-2">
+                            <label for="input_postal_zip" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Postal Zip
+                            </label>
+                            <input type="text"
+                                   id="input_postal_zip"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Postal Zip"/>
+                        </div>
+
+                        <div class="w-4/12 md:w-2/12  xl:w-1/12 md:pl-2 xl:pl-0 pt-2">
+                            <label for="input_region_code" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Region Code
+                            </label>
+                            <input type="text"
+                                   id="input_region_code"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Region Code"/>
+                        </div>
+                        <div class="w-8/12 md:w-4/12 pl-2 pt-2">
+                            <label for="input_region_name" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Region Name
+                            </label>
+                            <input type="text"
+                                   id="input_region_name"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Region Name"/>
+                        </div>
+
+                        <div class="w-full">
+                        </div>
+                        <div class="w-6/12 md:w-4/12 pt-2">
+                            <label for="input_latitude" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Latitude
+                            </label>
+                            <input type="number"
+                                   min="0"
+                                   id="input_latitude"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Latitude"/>
+                        </div>
+
+                        <div class="w-6/12 md:w-4/12 pl-2 pt-2">
+                            <label for="input_longitude" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Longitude
+                            </label>
+                            <input type="number"
+                                   min="0"
+                                   id="input_longitude"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Longitude"/>
+                        </div>
+
+                        <div class="w-6/12 md:w-2/12 md:pl-2 pt-2">
+                            <label for="input_accuracy_radius" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">
+                                Radius
+                            </label>
+                            <input type="number"
+                                   min="0"
+                                   id="input_accuracy_radius"
+                                   class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                                   placeholder="Radius"/>
+                        </div>
+
+                    </form>
+
+                    <div class="w-full pt-2" id="short_form">
+                        <label for="search_ip" class="block mb-2 text-sm font-medium text-slate-200 dark:text-gray-300">IP Address</label>
+                        <input type="text"
+                               id="search_ip"
+                               class=" px-3 py-3 placeholder-slate-500 text-slate-200 bg-slate-900 rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 undefined  border-0 "
+                               placeholder="IP Address"/>
+
+                    </div>
+
+                    <div class="w-full pt-4 text-right">
+                        <button type="reset" onclick="app.reset()" class="py-2 px-4 mt-2 mb-2 bg-purple-600 hover:bg-purple-500 shadow rounded">
+                            Clear all
+                        </button>
+                        <button type="button" onclick="app.toggle_form()" class="py-2 px-4 mt-2 mb-2 bg-sky-600 hover:bg-sky-500 shadow rounded">
+                            Advanced search
+                        </button>
+                        <button type="button" onclick="app.toggle_map()" class="py-2 px-4 mt-2 mb-2 bg-sky-600 hover:bg-sky-500 shadow rounded">
+                            Load external Map
+                        </button>
+                        <button type="button" onclick="app.search()" class="py-2 px-4 mt-2 mb-2 bg-sky-600 hover:bg-sky-500 shadow rounded">
+                            Search IPs
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="flex flex-wrap w-full bg-slate-800 py-4 px-4 md:rounded-lg md:mt-2" id="loading">
+                <div class="w-full text-center pt-4 pb-4">
+                    Stuff is loading...
+                </div>
+            </div>
+
+            <div class="flex flex-wrap w-full bg-slate-800 py-4 px-4 md:rounded-lg md:mt-2 hidden" id="map_holder">
+                <div id="map" style="height: 600px; width: 100%;" class="w-full pt-0 flex flex-wrap"></div>
+            </div>
+
+            <div class="flex flex-wrap w-full md:mt-0">
+                <div class="w-full pt-0 flex flex-wrap hidden" id="data_holder"></div>
+            </div>
+
+            <div class="flex flex-wrap w-full bg-slate-800 py-4 px-4 md:rounded-lg md:mt-2">
+                <div class="w-full flex flex-wrap">
+                    <div class="">
+                        <span class="text-normal">Third Party Disclosures</span>
+                        <p class="text-sm">
+                            We do not sell, trade, or otherwise transfer to outside parties your personally identifiable information. This does not include website hosting partners and other parties who assist us in operating our website, conducting our business, or servicing you, so long as those parties agree to keep this information confidential. We may also release your information when we believe release is appropriate to comply with the law, enforce our site policies, or protect ours or others' rights, property, or safety.
+                        </p>
+                    </div>
+
+                    <div class="pt-2">
+                        <span class="text-normal">Third party Links</span>
+                        <p class="text-sm">
+                            Third party sites may have separate and independent privacy policies. We therefore have no responsibility or liability for the content and activities of these linked sites. Nonetheless, we seek to protect the integrity of our site and welcome any feedback about these sites.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center w-full">
+        <div class="text-center container text-xs py-3">
+            <div class="py-1">
+                This product includes GeoLite2 data created by MaxMind,
+                <br />
+                available from https://www.maxmind.com.
+            </div>
+            <div class="py-1">
+                This site or product includes IP2Proxy LITE data
+                <br />
+                available from https://lite.ip2location.com.
+            </div>
+            <div class="py-1">
+                &copy; 2022 <a href="https://www.webklex.com" class="text-sky-200">www.webklex.com</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="application/javascript" src="/js/open_streetmap.js"></script>
+<script type="application/javascript" src="/js/app.js"></script>
+</body>
+</html>
