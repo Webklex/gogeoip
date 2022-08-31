@@ -1,44 +1,27 @@
 package main
 
 import (
-	"./server"
-	"./setup"
-	"./utils/config"
+	"embed"
 	"flag"
 	"fmt"
+	"github.com/webklex/gogeoip/src/app"
+	"math/rand"
+	"time"
 )
+
+//go:embed static
+var staticFiles embed.FS
 
 var buildNumber string
 var buildVersion string
 
 func main() {
-	c := config.DefaultConfig()
-	c.Load(c.File)
+	rand.Seed(time.Now().UTC().UnixNano())
 
-	c.AddFlags(flag.CommandLine)
-
-	sv := flag.Bool("version", false, "Show version and exit")
-	flag.Parse()
-
-	c.Build = config.Build{
-		Number: buildNumber,
+	if err := app.NewApplication(&app.Build{
+		Number:  buildNumber,
 		Version: buildVersion,
+	}, flag.CommandLine, staticFiles).Start(); err != nil {
+		fmt.Printf("[error] %s", err)
 	}
-
-	if *sv {
-		fmt.Printf("geoIP version: %s\n", c.Build.Version)
-		fmt.Printf("geoIP build number: %s\n", c.Build.Number)
-		return
-	}
-
-	if c.RunSetupFlag {
-		setup.RunSetup(c)
-	} else if c.SaveConfigFlag {
-		if _, err := c.Save(); err != nil {
-			print(err)
-		}
-	}
-
-	s := server.NewServerConfig(c)
-	s.Start()
 }
