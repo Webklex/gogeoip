@@ -219,7 +219,7 @@ The API is rate limited and offers the following endpoints:
 #### Get your own IP information
 
 ```bash
-curl :8080/api/me
+GET /api/me
 ```
 
 ```bash
@@ -306,7 +306,7 @@ curl 'https://www.gogeoip.com/api/me'
 #### Get your own Language
 
 ```bash
-curl :8080/api/language
+GET /api/language
 ```
 
 ```bash
@@ -324,7 +324,7 @@ curl 'https://www.gogeoip.com/api/language'
 #### Get your own User Agent
 
 ```bash
-curl :8080/api/useragent
+GET /api/useragent
 ```
 
 ```bash
@@ -348,7 +348,7 @@ curl 'https://www.gogeoip.com/api/useragent'
 #### Get Database Statistic
 
 ```bash
-curl :8080/api/statistic
+GET /api/statistic
 ```
 
 ```bash
@@ -370,7 +370,7 @@ curl 'https://www.gogeoip.com/api/statistic'
 #### Get Country information
 
 ```bash
-curl :8080/api/country/{code or empty}
+GET /api/country/{code or empty}
 ```
 
 ```bash
@@ -462,7 +462,7 @@ curl 'https://www.gogeoip.com/api/country'
 #### Get IP information
 
 ```bash
-curl :8080/api/detail/{ip, domain or empty}
+GET /api/detail/{ip, domain or empty}
 ```
 
 ```bash
@@ -530,11 +530,15 @@ curl 'https://www.gogeoip.com/api/detail'
 #### Search IPs
 
 ```bash
-curl :8080/api/search?limit=10&page=1&direction=asc --data-raw '{}'
+POST /api/search?limit=10&page=1&direction=asc
+
+{
+  "key": "value"
+}
 ```
 
 ```bash
-curl 'http://localhost:8080/api/search?limit=20' \
+curl 'https://www.gogeoip.com/api/search?limit=20' \
   --data-raw '{"ip":"127.0.0.1","proxy_type":"","type":"","score":"","threat":"","user_count":"","last_seen":null,"is_anonymous":false,"is_anonymous_proxy":false,"is_anonymous_vpn":false,"is_hosting_provider":false,"is_public_proxy":false,"is_satellite_provider":false,"is_tor_exit_node":false,"domains":[],"country":{"code":"","name":"","european_member":false,"continent":{"code":"","name":""}},"city":{"name":"","time_zone":"","metro_code":null,"population_density":null,"regions":[]},"isp":{"name":""},"network":{"network":"","domain":""},"organization":{"name":""},"autonomous_system":{"name":"","number":null}}'
 ```
 
