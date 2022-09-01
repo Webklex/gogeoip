@@ -11,7 +11,7 @@ A [Live Demo](https://www.gogeoip.com/) is available under [www.gogeoip.com](htt
 [![License][ico-license]](LICENSE.md)
 [![Hits][ico-hits]][link-hits]
 
-![geo_ip_web_gui](https://raw.githubusercontent.com/webklex/gogeoip/master/.github/geo_ip_web_gui.jpg)
+![GoGeoIP GUI](.github/images/geo_ip_web_gui.png)
 
 ## Table of Contents
 
