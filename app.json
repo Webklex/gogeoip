@@ -1,7 +1,0 @@
-{
-  "name": "GoGeoIP",
-  "description": "IP geolocation api",
-  "website": "https://github.com/webklex/gogeoip",
-  "success_url": "/",
-  "keywords": ["golang", "geoip", "api"]
-}
